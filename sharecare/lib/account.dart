@@ -8,6 +8,9 @@ class _AccountState extends State<Account> {
   final GlobalKey<ScaffoldState> _signupScaffold =
       new GlobalKey<ScaffoldState>();
 
+      FocusNode passwordLoginFocusNode = FocusNode();
+      FocusNode emialLoginFocusNode = FocusNode();
+
   _registerDialogResult(@required String action) {
     Navigator.pop(context);
   }
@@ -199,9 +202,14 @@ class _AccountState extends State<Account> {
                               decoration: InputDecoration(
                                 icon: Icon(Icons.email),
                                 labelText: "Email Address",
+                                
                               ),
                               style: TextStyle(color: Colors.white),
                               keyboardType: TextInputType.emailAddress,
+                              focusNode: emialLoginFocusNode,
+                              onFieldSubmitted: (val){
+                                FocusScope.of(context).requestFocus(passwordLoginFocusNode);
+                              },
                             ),
                           ),
                           Padding(
@@ -213,8 +221,12 @@ class _AccountState extends State<Account> {
                                 labelText: "Password",
                               ),
                               style: TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.emailAddress,
+                              keyboardType: TextInputType.text,
                               obscureText: true,
+                              focusNode: passwordLoginFocusNode,
+                              onFieldSubmitted: (val){
+                                //same as clicking login button
+                              },
                             ),
                           ),
                           SizedBox(

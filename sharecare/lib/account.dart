@@ -5,12 +5,27 @@ class Account extends StatefulWidget {
 }
 
 class _AccountState extends State<Account> {
+  
+
+  /*Login Objects */
+  FocusNode _passwordLoginFocusNode = FocusNode();
+  FocusNode _emialLoginFocusNode = FocusNode();
+
+  /*--Login Objects */
+
+  /*Register Objects */
   final GlobalKey<ScaffoldState> _signupScaffold =
       new GlobalKey<ScaffoldState>();
+      
+  FocusNode _nameRegisterFocusNode = FocusNode();
+  FocusNode _phoneRegisterFocusNode = FocusNode();
+  FocusNode _passwordRegisterFocusNode = FocusNode();
+  FocusNode _emialRegisterFocusNode = FocusNode();
+  FocusNode _conformpassRegisterFocusNode = FocusNode();
 
-      FocusNode passwordLoginFocusNode = FocusNode();
-      FocusNode emialLoginFocusNode = FocusNode();
-
+  /*--Register Objects */
+  
+  /*Register */
   _registerDialogResult(@required String action) {
     Navigator.pop(context);
   }
@@ -78,6 +93,10 @@ class _AccountState extends State<Account> {
                           ),
                           style: TextStyle(color: Colors.grey),
                           keyboardType: TextInputType.text,
+                          onFieldSubmitted: (val){
+                            FocusScope.of(context).requestFocus(_phoneRegisterFocusNode);
+                          },
+                          focusNode: _nameRegisterFocusNode,
                         ),
                       ),
                       Padding(
@@ -88,6 +107,10 @@ class _AccountState extends State<Account> {
                           ),
                           style: TextStyle(color: Colors.grey),
                           keyboardType: TextInputType.phone,
+                          focusNode: _phoneRegisterFocusNode,
+                          onFieldSubmitted: (val){
+                            FocusScope.of(context).requestFocus(_emialRegisterFocusNode);
+                          },
                         ),
                       ),
                       Padding(
@@ -98,6 +121,10 @@ class _AccountState extends State<Account> {
                           ),
                           style: TextStyle(color: Colors.grey),
                           keyboardType: TextInputType.emailAddress,
+                          onFieldSubmitted: (val){
+                            FocusScope.of(context).requestFocus(_passwordRegisterFocusNode);
+                          },
+                          focusNode: _emialRegisterFocusNode,
                         ),
                       ),
                       Padding(
@@ -109,6 +136,10 @@ class _AccountState extends State<Account> {
                           style: TextStyle(color: Colors.grey),
                           keyboardType: TextInputType.text,
                           obscureText: true,
+                          onFieldSubmitted: (val){
+                            FocusScope.of(context).requestFocus(_conformpassRegisterFocusNode);
+                          },
+                          focusNode: _passwordRegisterFocusNode,
                         ),
                       ),
                       Padding(
@@ -120,6 +151,10 @@ class _AccountState extends State<Account> {
                           style: TextStyle(color: Colors.grey),
                           keyboardType: TextInputType.text,
                           obscureText: true,
+                          onFieldSubmitted: (val){
+                            //Register Same as Register Button
+                          },
+                          focusNode: _conformpassRegisterFocusNode,
                         ),
                       ),
                     ],
@@ -133,6 +168,7 @@ class _AccountState extends State<Account> {
     );
   }
 
+  /*--Register */
   // _snackbar(@required String displaytext) {
   //   _signupScaffold.currentState.showSnackBar(new SnackBar(
   //     duration: Duration(hours: 1),
@@ -202,13 +238,13 @@ class _AccountState extends State<Account> {
                               decoration: InputDecoration(
                                 icon: Icon(Icons.email),
                                 labelText: "Email Address",
-                                
                               ),
                               style: TextStyle(color: Colors.white),
                               keyboardType: TextInputType.emailAddress,
-                              focusNode: emialLoginFocusNode,
-                              onFieldSubmitted: (val){
-                                FocusScope.of(context).requestFocus(passwordLoginFocusNode);
+                              focusNode: _emialLoginFocusNode,
+                              onFieldSubmitted: (val) {
+                                FocusScope.of(context)
+                                    .requestFocus(_passwordLoginFocusNode);
                               },
                             ),
                           ),
@@ -223,8 +259,8 @@ class _AccountState extends State<Account> {
                               style: TextStyle(color: Colors.white),
                               keyboardType: TextInputType.text,
                               obscureText: true,
-                              focusNode: passwordLoginFocusNode,
-                              onFieldSubmitted: (val){
+                              focusNode: _passwordLoginFocusNode,
+                              onFieldSubmitted: (val) {
                                 //same as clicking login button
                               },
                             ),

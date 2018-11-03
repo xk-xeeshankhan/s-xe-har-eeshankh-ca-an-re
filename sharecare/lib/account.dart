@@ -45,6 +45,10 @@ class _AccountState extends State<Account> {
     //send data to server
   }
 
+  _loginServer() {
+    Navigator.of(context).pushReplacementNamed('/home');
+  }
+
   _loadLayout(String action) {
     if (action.compareTo("Register") == 0) {
       return _registerLayout();
@@ -243,7 +247,6 @@ class _AccountState extends State<Account> {
   //   ));
   // }
 
-  _forgetPasswordAlertDialog() {}
 
   @override
   Widget build(BuildContext context) {
@@ -321,6 +324,7 @@ class _AccountState extends State<Account> {
                               focusNode: _passwordLoginFocusNode,
                               onFieldSubmitted: (val) {
                                 //same as clicking login button
+                                _loginServer();
                               },
                             ),
                           ),
@@ -344,7 +348,9 @@ class _AccountState extends State<Account> {
                               Expanded(
                                 child: MaterialButton(
                                   textColor: Colors.white,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _loginServer();
+                                  },
                                   color: Colors.redAccent,
                                   child: Text("LOGIN",
                                       style: TextStyle(fontSize: 16.0)),
@@ -375,4 +381,6 @@ class _AccountState extends State<Account> {
       ],
     );
   }
+
+  
 }

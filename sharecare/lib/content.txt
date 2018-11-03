@@ -224,3 +224,40 @@ class _AccountState extends State<Account> {
     ));
   }
 }
+
+
+return Row(
+        children: <Widget>[
+          Image(
+            image: AssetImage("assets/images/bg.jpg"),
+            fit: BoxFit.fill,
+            width: 50.0,
+            height: 50.0,
+          ),
+          Column(
+            children: <Widget>[
+              Text(
+                "Title Will Goes Here",
+                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+              ),
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Text(
+                      "Status ",
+                      style: TextStyle(
+                          fontSize: 14.0, ),
+                    ),
+                    Text(
+                      "Price ",
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                          fontSize: 14.0, color: Colors.green),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+    );

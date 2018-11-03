@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sharecare/newresource.dart';
 import 'account.dart';
+import 'home.dart';
 
 void main() => runApp(new MyApp());
 
@@ -20,9 +22,18 @@ class MyApp extends StatelessWidget {
         // counter didn't reset back to zero; the application is not restarted.
         primarySwatch: Colors.red,
       ),
+      routes: _myRoutes(),
       home: Scaffold(
         body: new Account(),
       ),
     );
+  }
+
+  _myRoutes(){
+    return <String, WidgetBuilder>{
+      '/home': (_) => new Home(),
+      '/newresource': (_) => new NewResource(),
+      // '/setting': (_) => new Setting(),
+    };
   }
 }

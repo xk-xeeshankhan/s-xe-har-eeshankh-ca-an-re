@@ -27,28 +27,28 @@ class _ScreenState extends State<Screen> {
       //Sell
       resourceList = List();
       resourceListAll.forEach((item) {
-        if (item.status == "sell") resourceList.add(item);
+        if (item.saleType.toLowerCase() == "sell") resourceList.add(item);
       });
       return _displayRow();
     } else if (_index == 1) {
       //Bid
       resourceList = List();
       resourceListAll.forEach((item) {
-        if (item.status == "bid") resourceList.add(item);
+        if (item.saleType.toLowerCase() == "bid") resourceList.add(item);
       });
       return _displayRow();
     } else if (_index == 2) {
       //rent
       resourceList = List();
       resourceListAll.forEach((item) {
-        if (item.status == "rent") resourceList.add(item);
+        if (item.saleType.toLowerCase() == "rent") resourceList.add(item);
       });
       return _displayRow();
     } else if (_index == 3) {
       //Donate
       resourceList = List();
       resourceListAll.forEach((item) {
-        if (item.status == "donate") resourceList.add(item);
+        if (item.saleType.toLowerCase() == "donate") resourceList.add(item);
       });
       return _displayRow();
     }
@@ -61,6 +61,9 @@ class _ScreenState extends State<Screen> {
         return Column(
           children: <Widget>[
             ListTile(
+              onTap: () {
+                _detailNavigation(resourceList[index]);
+              },
               leading: Image(
                 image: AssetImage("assets/images/bg.jpg"),
                 fit: BoxFit.fill,
@@ -68,7 +71,7 @@ class _ScreenState extends State<Screen> {
                 width: 80.0,
               ),
               title: Text(
-                resourceList[index].title,
+                resourceList[index].name,
                 style: TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
@@ -105,7 +108,7 @@ class _ScreenState extends State<Screen> {
   }
 
   _displayPrice(index) {
-    String price = _index==3?"Free":resourceList[index].price.toString();
+    String price = _index == 3 ? "Free" : resourceList[index].price.toString();
     return Expanded(
       child: Text(
         price,
@@ -115,4 +118,6 @@ class _ScreenState extends State<Screen> {
       ),
     );
   }
+
+  _detailNavigation(resource) {}
 }

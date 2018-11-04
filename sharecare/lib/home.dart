@@ -18,7 +18,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     // TODO: implement initState
     super.initState();
     _tabController = new TabController(vsync: this, initialIndex: 0, length: 4);
-    
   }
 
   @override
@@ -28,14 +27,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       bottomNavigationBar: _bottomNavigationBar(),
       body: _bodySelection(),
       floatingActionButton: _floatButtonNewResource(),
-      
     );
   }
 
-  _floatButtonNewResource(){
-    if(_bottomCurrentIndex==0){
+  _floatButtonNewResource() {
+    if (_bottomCurrentIndex == 0) {
       return FloatingActionButton(
-        onPressed: (){
+        onPressed: () {
           _floatingButtonPressed();
         },
         child: Icon(Icons.add),
@@ -44,30 +42,26 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return null;
   }
 
-  _floatingButtonPressed(){
+  _floatingButtonPressed() {
     Navigator.of(context).pushNamed('/newresource');
   }
 
-  _bodySelection(){
+  _bodySelection() {
     print(_bottomCurrentIndex);
-    if(_bottomCurrentIndex==0){
+    if (_bottomCurrentIndex == 0) {
       return _homeLayout();
-    }else if(_bottomCurrentIndex==1){
+    } else if (_bottomCurrentIndex == 1) {
       return Resource();
-    }
-    else if(_bottomCurrentIndex==2){
+    } else if (_bottomCurrentIndex == 2) {
       return Order();
-    }
-    else if(_bottomCurrentIndex==3){
+    } else if (_bottomCurrentIndex == 3) {
       return Setting();
-    }
-    else if(_bottomCurrentIndex==4){
+    } else if (_bottomCurrentIndex == 4) {
       return Logout();
     }
-    
   }
 
-  _homeLayout(){
+  _homeLayout() {
     //thing to remember the _tabController.index didnt get change we need to perform setState so we have
     //done the task directly by passing the index value else can create method change _tabController.index and then call Screen
     return TabBarView(
@@ -77,9 +71,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         Screen(1),
         Screen(2),
         Screen(3),
-        
       ],
-      
     );
   }
 
@@ -91,14 +83,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       ),
       elevation: 0.7,
       bottom: _bottomTabs(),
-      actions: <Widget>[
+      actions: _appBarActions(),
+    );
+  }
+
+  _appBarActions() {
+    if (_bottomCurrentIndex == 0) {
+      return <Widget>[
         IconButton(
           icon: Icon(Icons.search),
           onPressed: () {},
         ),
-      ],
-    );
-    
+      ];
+    }
+    return null;
   }
 
   _bottomTabs() {
@@ -152,5 +150,4 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       _bottomCurrentIndex = index;
     });
   }
-
 }

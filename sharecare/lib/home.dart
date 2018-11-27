@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sharecare/logout.dart';
 import 'package:sharecare/order.dart';
 import 'package:sharecare/resource.dart';
+import 'package:sharecare/detail.dart';
 import 'package:sharecare/setting.dart';
 import 'homeLayout/screen.dart';
 
@@ -51,7 +52,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     if (_bottomCurrentIndex == 0) {
       return _homeLayout();
     } else if (_bottomCurrentIndex == 1) {
-      return Resource();
+      return ResourceDetail();
     } else if (_bottomCurrentIndex == 2) {
       return Order();
     } else if (_bottomCurrentIndex == 3) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:sharecare/logout.dart';
 import 'package:sharecare/order.dart';
@@ -52,15 +54,46 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     if (_bottomCurrentIndex == 0) {
       return _homeLayout();
     } else if (_bottomCurrentIndex == 1) {
-      return ResourceDetail();
+      return Resource();
     } else if (_bottomCurrentIndex == 2) {
       return Order();
     } else if (_bottomCurrentIndex == 3) {
       return Setting();
-    } else if (_bottomCurrentIndex == 4) {
-      return Logout();
-    }
+    } 
   }
+
+  Future<void> _conformLogout() async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: true, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Conform Logout?'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text('Are You Sure to Logout?.'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('No'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          FlatButton(
+            child: Text('Yes'),
+            onPressed: () {
+              Navigator.of(context).pushReplacementNamed('/account');
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
   _homeLayout() {
     //thing to remember the _tabController.index didnt get change we need to perform setState so we have
@@ -148,7 +181,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   _bottomNavigationBarTab(int index) {
     setState(() {
+      if(index!=4){
       _bottomCurrentIndex = index;
+      }else if(index==4){
+        _conformLogout();
+      }
     });
   }
 }

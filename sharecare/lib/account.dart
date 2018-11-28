@@ -121,10 +121,12 @@ class _AccountState extends State<Account> {
                             style: TextStyle(color: Colors.grey),
                             keyboardType: TextInputType.text,
                             onFieldSubmitted: (val) {
-                              FocusScope.of(context)
-                                  .requestFocus(_phoneRegisterFocusNode);
+                                FocusScope.of(_signupScaffold.currentContext)
+                                    .requestFocus(_phoneRegisterFocusNode);
+                              
                             },
                             focusNode: _nameRegisterFocusNode,
+                            autofocus: true,
                           ),
                         ),
                         Padding(
@@ -137,7 +139,7 @@ class _AccountState extends State<Account> {
                             keyboardType: TextInputType.phone,
                             focusNode: _phoneRegisterFocusNode,
                             onFieldSubmitted: (val) {
-                              FocusScope.of(context)
+                              FocusScope.of(_signupScaffold.currentContext)
                                   .requestFocus(_emialRegisterFocusNode);
                             },
                           ),
@@ -151,7 +153,7 @@ class _AccountState extends State<Account> {
                             style: TextStyle(color: Colors.grey),
                             keyboardType: TextInputType.emailAddress,
                             onFieldSubmitted: (val) {
-                              FocusScope.of(context)
+                              FocusScope.of(_signupScaffold.currentContext)
                                   .requestFocus(_passwordRegisterFocusNode);
                             },
                             focusNode: _emialRegisterFocusNode,
@@ -167,7 +169,7 @@ class _AccountState extends State<Account> {
                             keyboardType: TextInputType.text,
                             obscureText: true,
                             onFieldSubmitted: (val) {
-                              FocusScope.of(context)
+                              FocusScope.of(_signupScaffold.currentContext)
                                   .requestFocus(_conformpassRegisterFocusNode);
                             },
                             focusNode: _passwordRegisterFocusNode,
@@ -221,6 +223,7 @@ class _AccountState extends State<Account> {
                 ),
                 style: TextStyle(color: Colors.grey),
                 keyboardType: TextInputType.emailAddress,
+                autofocus: true,
                 onFieldSubmitted: (val) {
                   //_forgetPasswordServer Call
                 },
@@ -230,6 +233,7 @@ class _AccountState extends State<Account> {
     );
   }
   /*--Register */
+
   // _snackbar(@required String displaytext) {
   //   _signupScaffold.currentState.showSnackBar(new SnackBar(
   //     duration: Duration(hours: 1),
@@ -247,140 +251,145 @@ class _AccountState extends State<Account> {
   //   ));
   // }
 
-
   @override
   Widget build(BuildContext context) {
-    return new Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        new Image(
-          image: AssetImage("assets/images/bg.jpg"),
-          fit: BoxFit.cover,
-        ),
-        new Column(
-          children: <Widget>[
-            // FlutterLogo(
-            //   size: _titleAnimation.value * 100,
-            // ),
-            SizedBox(
-              height: 100.0,
-            ),
-            Text("Share And Care",
-                style: TextStyle(
-                    fontSize: 40.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white)),
-            Padding(
-              padding: const EdgeInsets.all(40.0),
-              child: Text("Login",
-                  style: TextStyle(fontSize: 40.0, color: Colors.white)),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Form(
-                  child: Theme(
-                    data: ThemeData(
-                      primaryColor: Colors.white,
-                      inputDecorationTheme: InputDecorationTheme(
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(30.0)),
-                          labelStyle:
-                              TextStyle(color: Colors.white54, fontSize: 16.0)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10.0, right: 10.0, top: 5.0, bottom: 5.0),
-                            child: TextFormField(
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.email),
-                                labelText: "Email Address",
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          Image(
+            image: AssetImage("assets/images/bg.jpg"),
+            fit: BoxFit.cover,
+          ),
+          Column(
+            children: <Widget>[
+              // FlutterLogo(
+              //   size: _titleAnimation.value * 100,
+              // ),
+              SizedBox(
+                height: 100.0,
+              ),
+              Text("Share And Care",
+                  style: TextStyle(
+                      fontSize: 40.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
+              Padding(
+                padding: const EdgeInsets.all(40.0),
+                child: Text("Login",
+                    style: TextStyle(fontSize: 40.0, color: Colors.white)),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Form(
+                    child: Theme(
+                      data: ThemeData(
+                        primaryColor: Colors.white,
+                        inputDecorationTheme: InputDecorationTheme(
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                borderRadius: BorderRadius.circular(30.0)),
+                            labelStyle: TextStyle(
+                                color: Colors.white54, fontSize: 16.0)),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 10.0,
+                                  right: 10.0,
+                                  top: 5.0,
+                                  bottom: 5.0),
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  icon: Icon(Icons.email),
+                                  labelText: "Email Address",
+                                ),
+                                style: TextStyle(color: Colors.white),
+                                keyboardType: TextInputType.emailAddress,
+                                focusNode: _emialLoginFocusNode,
+                                onFieldSubmitted: (val) {
+                                  FocusScope.of(context)
+                                      .requestFocus(_passwordLoginFocusNode);
+                                },
                               ),
-                              style: TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.emailAddress,
-                              focusNode: _emialLoginFocusNode,
-                              onFieldSubmitted: (val) {
-                                FocusScope.of(context)
-                                    .requestFocus(_passwordLoginFocusNode);
-                              },
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 10.0, right: 10.0, top: 5.0, bottom: 5.0),
-                            child: TextFormField(
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.lock),
-                                labelText: "Password",
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 10.0,
+                                  right: 10.0,
+                                  top: 5.0,
+                                  bottom: 5.0),
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  icon: Icon(Icons.lock),
+                                  labelText: "Password",
+                                ),
+                                style: TextStyle(color: Colors.white),
+                                keyboardType: TextInputType.text,
+                                obscureText: true,
+                                focusNode: _passwordLoginFocusNode,
+                                onFieldSubmitted: (val) {
+                                  //same as clicking login button
+                                  _loginServer();
+                                },
                               ),
-                              style: TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.text,
-                              obscureText: true,
-                              focusNode: _passwordLoginFocusNode,
-                              onFieldSubmitted: (val) {
-                                //same as clicking login button
-                                _loginServer();
-                              },
                             ),
-                          ),
-                          SizedBox(
-                            height: 20.0,
-                          ),
-                          Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: MaterialButton(
-                                  textColor: Colors.white,
-                                  onPressed: () {
-                                    _myAlertDialog("ForgetPassword");
-                                  },
-                                  child: Text(
-                                    "Forget Password?",
-                                    style: TextStyle(fontSize: 16.0),
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: MaterialButton(
+                                    textColor: Colors.white,
+                                    onPressed: () {
+                                      _myAlertDialog("ForgetPassword");
+                                    },
+                                    child: Text(
+                                      "Forget Password?",
+                                      style: TextStyle(fontSize: 16.0),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Expanded(
-                                child: MaterialButton(
-                                  textColor: Colors.white,
-                                  onPressed: () {
-                                    _loginServer();
-                                  },
-                                  color: Colors.redAccent,
-                                  child: Text("LOGIN",
-                                      style: TextStyle(fontSize: 16.0)),
-                                ),
-                              )
-                            ],
-                          ),
-                          SizedBox(
-                            height: 50.0,
-                          ),
-                          MaterialButton(
-                            textColor: Colors.white,
-                            onPressed: () {
-                              _myAlertDialog("Register");
-                            },
-                            child: Text("Create New Account",
-                                style: TextStyle(fontSize: 16.0)),
-                          ),
-                        ],
+                                Expanded(
+                                  child: MaterialButton(
+                                    textColor: Colors.white,
+                                    onPressed: () {
+                                      _loginServer();
+                                    },
+                                    color: Colors.redAccent,
+                                    child: Text("LOGIN",
+                                        style: TextStyle(fontSize: 16.0)),
+                                  ),
+                                )
+                              ],
+                            ),
+                            SizedBox(
+                              height: 50.0,
+                            ),
+                            MaterialButton(
+                              textColor: Colors.white,
+                              onPressed: () {
+                                _myAlertDialog("Register");
+                              },
+                              child: Text("Create New Account",
+                                  style: TextStyle(fontSize: 16.0)),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
-
-  
 }

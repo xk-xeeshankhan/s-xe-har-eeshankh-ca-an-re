@@ -1,114 +1,129 @@
 import 'package:flutter/material.dart';
 
 class ResourceDetail extends StatefulWidget {
+  final String calledBy;
+  final String id;
+  ResourceDetail(this.calledBy, this.id);
   _ResourceDetailState createState() => _ResourceDetailState();
 }
 
 class _ResourceDetailState extends State<ResourceDetail> {
+  String _calledBy;
+  String _id;
+  @override
+  void initState() {
+    // TODO: implement initState
+    _calledBy = widget.calledBy;
+    _id = widget.id;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 5.0, bottom: 8.0),
-              child: Text(
-                "Resource Name",
-                style: TextStyle(
-                  fontSize: 22.0,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Image(
-              image: AssetImage("assets/images/bg.jpg"),
-              width: MediaQuery.of(context).size.width,
-              height: 200.0,
-              fit: BoxFit.cover,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-              child: Text(
-                "Sale Type",
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(top: 5.0, bottom: 8.0),
+                child: Text(
+                  "Resource Name",
+                  style: TextStyle(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      "Status",
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      "Avaliable",
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ),
-                ],
+              Image(
+                image: AssetImage("assets/images/bg.jpg"),
+                width: MediaQuery.of(context).size.width,
+                height: 200.0,
+                fit: BoxFit.cover,
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      "Description",
-                      style: TextStyle(fontSize: 16.0),
-                    ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                child: Text(
+                  "Sale Type",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Expanded(
-                    child: Text(
-                      "This is to test that each description is provided in exact format so its only the test",
-                      style: TextStyle(fontSize: 16.0),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      "Price",
-                      style: TextStyle(fontSize: 16.0),
+              Padding(
+                padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        "Status",
+                        style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      "PKR 200",
-                      style: TextStyle(fontSize: 16.0, color: Colors.green),
+                    Expanded(
+                      child: Text(
+                        "Avaliable",
+                        style: TextStyle(fontSize: 16.0),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Divider(
-              height: 2.0,
-            ),
-            _paymentMethod(),
-            Divider(
-              height: 2.0,
-            ),
-            _deliveryMethod(),
-            _bidDetail(),
-            _rentDetail(),
-            _detailActionButton(),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        "Description",
+                        style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        "This is to test that each description is provided in exact format so its only the test",
+                        style: TextStyle(fontSize: 16.0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        "Price",
+                        style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        "PKR 200",
+                        style: TextStyle(fontSize: 16.0, color: Colors.green),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 2.0,
+              ),
+              _paymentMethod(),
+              Divider(
+                height: 2.0,
+              ),
+              _deliveryMethod(),
+              _bidDetail(),
+              _rentDetail(),
+              _detailActionButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -121,7 +136,8 @@ class _ResourceDetailState extends State<ResourceDetail> {
       textColor: Colors.white,
       onPressed: () {},
       color: Colors.redAccent,
-      child: Text("Check In".toUpperCase(), style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold)),
+      child: Text("Check In".toUpperCase(),
+          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
     );
   }
 
@@ -419,6 +435,4 @@ class _ResourceDetailState extends State<ResourceDetail> {
       ),
     );
   }
-
 }
-

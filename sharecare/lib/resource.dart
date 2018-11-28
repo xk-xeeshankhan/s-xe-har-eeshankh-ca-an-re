@@ -66,6 +66,30 @@ class _ResourceState extends State<Resource> {
                   ],
                 ),
               ),
+            ),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: IconButton(
+                    icon: Icon(Icons.details),
+                    onPressed: () {},
+                  ),
+                ),
+                Expanded(
+                  child: IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () {},
+                    color: Colors.green,
+                  ),
+                ),
+                Expanded(
+                  child: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {},
+                    color: Colors.red,
+                  ),
+                ),
+              ],
             )
           ],
         );

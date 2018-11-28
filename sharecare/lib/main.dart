@@ -23,16 +23,15 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.red,
       ),
       routes: _myRoutes(),
-      home: Scaffold(
-        body: new Account(),
-      ),
+      home: new Account(),
     );
   }
 
-  _myRoutes(){
+  _myRoutes() {
     return <String, WidgetBuilder>{
       '/home': (_) => new Home(),
       '/newresource': (_) => new NewResource(),
+      '/account': (_) => new Account(),
       // '/setting': (_) => new Setting(),
     };
   }

@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'validator.dart';
+import 'constant.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Account extends StatefulWidget {
   _AccountState createState() => _AccountState();
@@ -7,12 +12,17 @@ class Account extends StatefulWidget {
 
 class _AccountState extends State<Account> {
   /*Login Objects */
+
+  final GlobalKey<ScaffoldState> _loginScaffold =
+      new GlobalKey<ScaffoldState>();
+
   FocusNode _passwordLoginFocusNode = FocusNode();
   FocusNode _emialLoginFocusNode = FocusNode();
   TextEditingController _passwordLoginController;
   TextEditingController _emailLoginController;
   final GlobalKey<FormState> _formSignKey = GlobalKey<FormState>();
   bool _autoSignValidate = false;
+
   /*--Login Objects */
 
   /*Register Objects */
@@ -42,6 +52,7 @@ class _AccountState extends State<Account> {
   /*--Forget Password Objects */
 
   void initState() {
+    _home();
     /*Login */
     _passwordLoginController = TextEditingController();
     _emailLoginController = TextEditingController();
@@ -50,7 +61,7 @@ class _AccountState extends State<Account> {
     /*Forget Password */
     _emailForgetController = TextEditingController();
     /*--Forget Password */
-    
+
     /*Register */
     _nameSignUpController = TextEditingController();
     _phoneSignUpController = TextEditingController();
@@ -58,10 +69,18 @@ class _AccountState extends State<Account> {
     _emailSignUpController = TextEditingController();
     _conformSignUpController = TextEditingController();
     /*--Register */
-    
+
     super.initState();
   }
 
+   _home() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(prefs.getString("email")!=null){
+      Navigator.of(context).pushReplacementNamed('/home');
+    }else{
+      print("Main: SharedPreferences Else ");
+    }
+  }
   _dialogResult(String action) {
     if (action == "Cancel") {
       Navigator.pop(context);
@@ -98,10 +117,34 @@ class _AccountState extends State<Account> {
     }
   }
 
-  _loginServer() {
+  _loginServer() async {
+    var response =
+        await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
+      "worktodone": "SignIn",
+      "email": _emailLoginController.text,
+      "password": _passwordLoginController.text
+    });
+    print(response.body);
+    if (response.body.toLowerCase().compareTo("success") == 0) {
+      _sharepref();
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else {
+      _snackbar(
+          displaytext: "Invalid Email or Password",
+          label: "Dismiss",
+          mycontext: _loginScaffold);
+    }
+  }
+
+  _sharepref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("email", _emailLoginController.text);
+  }
+
+  _loginFunction() {
     if (_formSignKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
-      Navigator.of(context).pushReplacementNamed('/home');
+      _loginServer();
     } else {
 //    If all data are not valid then start auto validation.
       setState(() {
@@ -314,26 +357,27 @@ class _AccountState extends State<Account> {
   }
   /*--Register */
 
-  // _snackbar(@required String displaytext) {
-  //   _signupScaffold.currentState.showSnackBar(new SnackBar(
-  //     duration: Duration(hours: 1),
-  //     action: SnackBarAction(
-  //       label: "Okay",
-  //       onPressed: () {
-  //         Scaffold.of(context)
-  //             .hideCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
-  //       },
-  //     ),
-  //     content: new Text(
-  //       displaytext,
-  //       style: TextStyle(color: Colors.white),
-  //     ),
-  //   ));
-  // }
+  _snackbar({label, @required String displaytext, @required mycontext}) {
+    mycontext.currentState.showSnackBar(new SnackBar(
+      duration: Duration(seconds: label == null ? 2 : 3600),
+      action: SnackBarAction(
+        label: label == null ? "" : label,
+        onPressed: () {
+          mycontext.currentState
+              .hideCurrentSnackBar(reason: SnackBarClosedReason.dismiss);
+        },
+      ),
+      content: new Text(
+        displaytext,
+        style: TextStyle(color: Colors.white),
+      ),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _loginScaffold,
       body: Stack(
         fit: StackFit.expand,
         children: <Widget>[
@@ -425,7 +469,7 @@ class _AccountState extends State<Account> {
               focusNode: _passwordLoginFocusNode,
               onFieldSubmitted: (val) {
                 //same as clicking login button
-                _loginServer();
+                _loginFunction();
               },
             ),
           ),
@@ -450,7 +494,7 @@ class _AccountState extends State<Account> {
                 child: MaterialButton(
                   textColor: Colors.white,
                   onPressed: () {
-                    _loginServer();
+                    _loginFunction();
                   },
                   color: Colors.redAccent,
                   child: Text("LOGIN", style: TextStyle(fontSize: 16.0)),
@@ -472,5 +516,4 @@ class _AccountState extends State<Account> {
       ),
     );
   }
-
 }

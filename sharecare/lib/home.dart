@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:sharecare/logout.dart';
 import 'package:sharecare/order.dart';
 import 'package:sharecare/resource.dart';
 import 'package:sharecare/detail.dart';
 import 'package:sharecare/setting.dart';
 import 'homeLayout/screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
@@ -86,6 +86,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           FlatButton(
             child: Text('Yes'),
             onPressed: () {
+              _removeSharedPref();
               Navigator.of(context).pushReplacementNamed('/account');
             },
           ),
@@ -93,6 +94,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       );
     },
   );
+}
+
+_removeSharedPref() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.clear();
 }
 
   _homeLayout() {

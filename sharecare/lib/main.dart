@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sharecare/newresource.dart';
 import 'account.dart';
 import 'home.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(new MyApp());
 
@@ -27,6 +27,8 @@ class MyApp extends StatelessWidget {
       home: new Account(),
     );
   }
+
+ 
 
   _myRoutes() {
     return <String, WidgetBuilder>{

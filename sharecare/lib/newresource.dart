@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sharecare/constantWidget.dart';
+import 'package:sharecare/constant.dart';
 
 class NewResource extends StatefulWidget {
   _NewResourceState createState() => _NewResourceState();

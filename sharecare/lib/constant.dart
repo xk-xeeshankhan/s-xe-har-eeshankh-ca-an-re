@@ -12,10 +12,10 @@ RandomString(int length) {
   return new String.fromCharCodes(codeUnits);
 }
 
-constantAppBar() {
+constantAppBar(String text) {
   return AppBar(
     title: Text(
-      "New Resource",
+      text,
       style: TextStyle(color: Colors.white),
     ),
   );

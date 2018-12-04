@@ -28,7 +28,7 @@ class _NewResourceState extends State<NewResource> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: constantAppBar(),
+      appBar: constantAppBar("New Resource"),
       body: _body(),
     );
   }

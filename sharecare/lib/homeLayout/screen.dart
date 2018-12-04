@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sharecare/Model/resource.dart';
 import 'package:sharecare/constant.dart';
+import 'package:sharecare/detail.dart';
 
 class Screen extends StatefulWidget {
   final int index;
@@ -120,5 +121,10 @@ class _ScreenState extends State<Screen> {
     );
   }
 
-  _detailNavigation(resource) {}
+  _detailNavigation(ResourceModel resource) {
+    Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ResourceDetail("resource",resource.id.toString())),
+            );
+  }
 }

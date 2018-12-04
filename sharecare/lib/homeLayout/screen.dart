@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sharecare/Model/resource.dart';
+import 'package:sharecare/constant.dart';
 
 class Screen extends StatefulWidget {
   final int index;
@@ -65,7 +66,7 @@ class _ScreenState extends State<Screen> {
                 _detailNavigation(resourceList[index]);
               },
               leading: Image(
-                image: AssetImage("assets/images/bg.jpg"),
+                image: NetworkImage(resourceList[index].imageUrl.replaceFirst("localhost", ipv4)),
                 fit: BoxFit.fill,
                 height: 60.0,
                 width: 80.0,

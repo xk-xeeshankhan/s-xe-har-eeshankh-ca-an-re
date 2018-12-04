@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:sharecare/constant.dart';
 import 'package:sharecare/order.dart';
 import 'package:sharecare/resource.dart';
-import 'package:sharecare/detail.dart';
 import 'package:sharecare/setting.dart';
 import 'homeLayout/screen.dart';
+import 'package:sharecare/Model/resource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
@@ -21,6 +24,41 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     // TODO: implement initState
     super.initState();
     _tabController = new TabController(vsync: this, initialIndex: 0, length: 4);
+    _serverData();
+  }
+
+  _serverData() async {
+    var response = await http.post(Uri.encodeFull(serverURL), headers: {
+      "Accept": "application/json"
+    }, body: {
+      "worktodone": "Resources",
+    });
+    if (response.body.toLowerCase().compareTo("nodata") == 0) {
+    } else {
+      setState(() {
+        List data = json.decode(response.body);
+        data.forEach((res) => resourceListAll.add(new ResourceModel(
+            int.parse(res["id"]),
+            res["name"],
+            res["description"],
+            res["status"],
+            res["saleType"],
+            res["imageUrl"],
+            res["addedDate"],
+            int.parse(res["price"]),
+            res["cashOnDelivery"]=="0",
+            res["facebook"]=="0",
+            res["none"]=="0",
+            res["easypaisa"]=="0",
+            res["tcs"]=="0",
+            res["cargo"]=="0",
+            res["banktransfer"]=="0",
+            int.parse(res["feedLike"]),
+            int.parse(res["feedDislike"]),
+            int.parse(res["userId"]),
+            int.parse(res["requestUserId"]))));
+      });
+    }
   }
 
   @override
@@ -59,47 +97,47 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       return Order();
     } else if (_bottomCurrentIndex == 3) {
       return Setting();
-    } 
+    }
   }
 
   Future<void> _conformLogout() async {
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: true, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Conform Logout?'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text('Are You Sure to Logout?.'),
-            ],
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Conform Logout?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are You Sure to Logout?.'),
+              ],
+            ),
           ),
-        ),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('No'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          FlatButton(
-            child: Text('Yes'),
-            onPressed: () {
-              _removeSharedPref();
-              Navigator.of(context).pushReplacementNamed('/account');
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
+          actions: <Widget>[
+            FlatButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text('Yes'),
+              onPressed: () {
+                _removeSharedPref();
+                Navigator.of(context).pushReplacementNamed('/account');
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-_removeSharedPref() async{
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  prefs.clear();
-}
+  _removeSharedPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
 
   _homeLayout() {
     //thing to remember the _tabController.index didnt get change we need to perform setState so we have
@@ -187,9 +225,9 @@ _removeSharedPref() async{
 
   _bottomNavigationBarTab(int index) {
     setState(() {
-      if(index!=4){
-      _bottomCurrentIndex = index;
-      }else if(index==4){
+      if (index != 4) {
+        _bottomCurrentIndex = index;
+      } else if (index == 4) {
         _conformLogout();
       }
     });

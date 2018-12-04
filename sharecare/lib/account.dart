@@ -73,14 +73,15 @@ class _AccountState extends State<Account> {
     super.initState();
   }
 
-   _home() async{
+  _home() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(prefs.getString("email")!=null){
+    if (prefs.getString("email") != null) {
       Navigator.of(context).pushReplacementNamed('/home');
-    }else{
+    } else {
       print("Main: SharedPreferences Else ");
     }
   }
+
   _dialogResult(String action) {
     if (action == "Cancel") {
       Navigator.pop(context);
@@ -91,11 +92,43 @@ class _AccountState extends State<Account> {
     }
   }
 
-  _registerServer() {
+  _registerServer() async {
     //send data to server
     if (_formSignUpKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
-
+      String code = RandomString(10);
+      var response =
+          await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
+        "worktodone": "SignUp",
+        "name": _nameSignUpController.text,
+        "phonenumber": _phoneSignUpController.text,
+        "email": _emailSignUpController.text,
+        "password": _passwordSignUpController.text,
+        "code": code
+      });
+      print(response.body);
+      if (response.body.toLowerCase().compareTo("success") == 0) {
+        Navigator.pop(context);
+        _snackbar(
+            displaytext: "Check Email to Verify",
+            label: "Got It!",
+            mycontext: _loginScaffold);
+      } else if (response.body.toLowerCase().compareTo("emailused") == 0) {
+        _snackbar(
+            displaytext: "Email Address Already Exists",
+            label: null,
+            mycontext: _signupScaffold);
+      }else if (response.body.toLowerCase().compareTo("emailerror") == 0) {
+        _snackbar(
+            displaytext: "Registration Error! Try Again Later",
+            label: null,
+            mycontext: _signupScaffold);
+      } else {
+        _snackbar(
+            displaytext: "Something Went Wrong",
+            label: null,
+            mycontext: _signupScaffold);
+      }
     } else {
 //    If all data are not valid then start auto validation.
       setState(() {
@@ -104,11 +137,38 @@ class _AccountState extends State<Account> {
     }
   }
 
-  _forgetPasswordServer() {
+  _forgetPasswordServer() async {
     //send data to server
     if (_formkeyforgetpassword.currentState.validate()) {
 //    If all data are correct then save data to out variables
-
+      Navigator.pop(context);
+      var response =
+          await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
+        "worktodone": "ForgetPassword",
+        "email": _emailForgetController.text,
+      });
+      if (response.body.toLowerCase().compareTo("success") == 0) {
+        _snackbar(
+            displaytext: "Check Your Email Address",
+            label: "Got It!",
+            mycontext: _loginScaffold);
+      } else if (response.body.toLowerCase().compareTo("emailnotexists") == 0) {
+        _snackbar(
+            displaytext: "Email Not Found!",
+            label: null,
+            mycontext: _loginScaffold);
+      } else if (response.body.toLowerCase().compareTo("emailsendingerror") ==
+          0) {
+        _snackbar(
+            displaytext: "Reset Error, Try Again Later!",
+            label: null,
+            mycontext: _loginScaffold);
+      } else {
+        _snackbar(
+            displaytext: "Something Went Wrong",
+            label: null,
+            mycontext: _loginScaffold);
+      }
     } else {
 //    If all data are not valid then start auto validation.
       setState(() {
@@ -128,6 +188,11 @@ class _AccountState extends State<Account> {
     if (response.body.toLowerCase().compareTo("success") == 0) {
       _sharepref();
       Navigator.of(context).pushReplacementNamed('/home');
+    } else if (response.body.toLowerCase().compareTo("notverified") == 0) {
+      _snackbar(
+          displaytext: "Please Verify Your Email",
+          label: "Got IT!",
+          mycontext: _loginScaffold);
     } else {
       _snackbar(
           displaytext: "Invalid Email or Password",
@@ -187,7 +252,7 @@ class _AccountState extends State<Account> {
   }
 
   _registerLayout() {
-    return new Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       key: _signupScaffold,
       body: Column(

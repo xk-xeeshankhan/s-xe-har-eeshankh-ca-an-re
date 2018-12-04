@@ -6,7 +6,7 @@ class ResourceModel {
   int id, like, dislike, userId, requestUserId;
   String name, description, status, addedDate, saleType, imageUrl;
   int price;
-  bool cashOnDelivery, stamp, none, easypasa, tcs, cargo, banktransfer;
+  bool cashOnDelivery, facebook, none, easypasa, tcs, cargo, banktransfer;
 
   User _requestedUser;
   List<RentDetail> _rentDetailList;
@@ -22,7 +22,7 @@ class ResourceModel {
       this.addedDate,
       this.price,
       this.cashOnDelivery,
-      this.stamp,
+      this.facebook,
       this.none,
       this.easypasa,
       this.tcs,
@@ -57,31 +57,4 @@ class ResourceModel {
   /*--Biding Detail List */
 }
 
-List<ResourceModel> resourceListAll = [
-  ResourceModel(1, "name", "description", "status", "sell", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "sell", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "sell", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "sell", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "sell", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "sell", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "bid", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "bid", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "rent", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "donate", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "donate", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "donate", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-  ResourceModel(1, "name", "description", "status", "donate", "imageUrl",
-      "addedDate", 0, true, true, true, true, true, true, true, 0, 0, 1, 2),
-];
+List<ResourceModel> resourceListAll= List();

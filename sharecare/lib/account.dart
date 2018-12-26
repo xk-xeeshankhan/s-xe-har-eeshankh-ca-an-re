@@ -289,6 +289,7 @@ class _AccountState extends State<Account> {
                           child: TextFormField(
                             decoration: InputDecoration(
                               labelText: "Name",
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
                             ),
                             style: TextStyle(color: Colors.grey),
                             keyboardType: TextInputType.text,
@@ -307,6 +308,7 @@ class _AccountState extends State<Account> {
                           child: TextFormField(
                             decoration: InputDecoration(
                               labelText: "Phone Number",
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
                             ),
                             style: TextStyle(color: Colors.grey),
                             keyboardType: TextInputType.phone,
@@ -324,6 +326,7 @@ class _AccountState extends State<Account> {
                           child: TextFormField(
                             decoration: InputDecoration(
                               labelText: "Email Address",
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
                             ),
                             style: TextStyle(color: Colors.grey),
                             keyboardType: TextInputType.emailAddress,
@@ -341,6 +344,7 @@ class _AccountState extends State<Account> {
                           child: TextFormField(
                             decoration: InputDecoration(
                               labelText: "Password",
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
                             ),
                             style: TextStyle(color: Colors.grey),
                             keyboardType: TextInputType.text,
@@ -359,6 +363,7 @@ class _AccountState extends State<Account> {
                           child: TextFormField(
                             decoration: InputDecoration(
                               labelText: "Conform Password",
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
                             ),
                             style: TextStyle(color: Colors.grey),
                             keyboardType: TextInputType.text,
@@ -406,6 +411,7 @@ class _AccountState extends State<Account> {
               child: TextFormField(
                 decoration: InputDecoration(
                   labelText: "Email Address",
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
                 ),
                 style: TextStyle(color: Colors.grey),
                 keyboardType: TextInputType.emailAddress,
@@ -508,6 +514,7 @@ class _AccountState extends State<Account> {
               decoration: InputDecoration(
                 icon: Icon(Icons.email),
                 labelText: "Email Address",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
               ),
               style: TextStyle(color: Colors.white),
               keyboardType: TextInputType.emailAddress,
@@ -526,6 +533,7 @@ class _AccountState extends State<Account> {
               decoration: InputDecoration(
                 icon: Icon(Icons.lock),
                 labelText: "Password",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(25.0))
               ),
               style: TextStyle(color: Colors.white),
               keyboardType: TextInputType.text,

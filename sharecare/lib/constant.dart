@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-String ipv4 = "192.168.1.6";
+String ipv4 = "192.168.1.2";
 String serverURL = "http://"+ipv4+"/shareandcare/android/";
 
 RandomString(int length) {

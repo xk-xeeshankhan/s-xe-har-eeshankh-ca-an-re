@@ -1,17 +1,27 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:sharecare/constant.dart';
+import 'package:image_picker/image_picker.dart';
 
 class NewResource extends StatefulWidget {
   _NewResourceState createState() => _NewResourceState();
 }
 
 class _NewResourceState extends State<NewResource> {
+  TextEditingController _nameResourceController;
+  TextEditingController _descriptionResourceController;
+  TextEditingController _priceResourceController;
+
   FocusNode _nameFocusNode = FocusNode();
   FocusNode _descriptionFocusNode = FocusNode();
   FocusNode _priceFocusNode = FocusNode();
 
   List<String> _saleType = ["Sell", "Bid", "Rent", "Donate"];
   String _selectedSaleType = "Sell";
+
+  final GlobalKey<FormState> _formNewResourceKey = GlobalKey<FormState>();
+  bool _autoNewResourceValidate = false;
 
 /*Delivery Methods */
   bool _cargo = false;
@@ -25,6 +35,22 @@ class _NewResourceState extends State<NewResource> {
   bool _banktransfer = false;
 /*--Payment Methods */
 
+/* Validate */
+  bool _deliveryValidate = true;
+  bool _paymentValidate = true;
+/* --Validate */
+
+  @override
+  void initState() {
+    /*Controllers */
+    _nameResourceController = TextEditingController();
+    _descriptionResourceController = TextEditingController();
+    _priceResourceController = TextEditingController();
+    /*--Controllers */
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,9 +59,37 @@ class _NewResourceState extends State<NewResource> {
     );
   }
 
+  File _image;
+  _pickImage() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _image = image;
+    });
+  }
+
+  _imageLayout() {
+    if (_image == null) {
+      return Image(
+        image: AssetImage("assets/images/bg.jpg"),
+        width: MediaQuery.of(context).size.width,
+        height: 200.0,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Image.file(
+        _image,
+        width: MediaQuery.of(context).size.width,
+        height: 200.0,
+        fit: BoxFit.fill,
+      );
+    }
+  }
+
   _body() {
     return SingleChildScrollView(
       child: Form(
+        key: _formNewResourceKey,
+        autovalidate: _autoNewResourceValidate,
         child: Theme(
           data: ThemeData(
             primaryColor: Colors.grey,
@@ -47,12 +101,11 @@ class _NewResourceState extends State<NewResource> {
           ),
           child: Column(
             children: <Widget>[
-              Image(
-                image: AssetImage("assets/images/bg.jpg"),
-                width: MediaQuery.of(context).size.width,
-                height: 200.0,
-                fit: BoxFit.cover,
-              ),
+              GestureDetector(
+                  onTap: () {
+                    _pickImage();
+                  },
+                  child: _imageLayout()),
               SizedBox(
                 height: 10.0,
               ),
@@ -63,21 +116,23 @@ class _NewResourceState extends State<NewResource> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Container(
-                      width: MediaQuery.of(context).size.width,
                       child: DropdownButton<String>(
+                        elevation: 0,
                         value: _selectedSaleType,
                         items: _saleType.map((String value) {
                           return new DropdownMenuItem<String>(
                             value: value,
                             child: new Text(
                               value,
-                              style: TextStyle(fontSize: 16.0),
+                              style:
+                                  TextStyle(fontSize: 16.0, letterSpacing: 1.5),
                             ),
                           );
                         }).toList(),
                         onChanged: (val) {
                           _changeSaleType(val);
                         },
+                        isExpanded: true,
                       ),
                     ),
                     Padding(
@@ -85,8 +140,9 @@ class _NewResourceState extends State<NewResource> {
                           left: 10.0, right: 10.0, top: 5.0, bottom: 5.0),
                       child: TextFormField(
                         decoration: InputDecoration(
-                          labelText: "Name",
-                        ),
+                            labelText: "Name",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15.0))),
                         style: TextStyle(color: Colors.grey),
                         keyboardType: TextInputType.text,
                         focusNode: _nameFocusNode,
@@ -94,6 +150,8 @@ class _NewResourceState extends State<NewResource> {
                           FocusScope.of(context)
                               .requestFocus(_descriptionFocusNode);
                         },
+                        controller: _nameResourceController,
+                        validator: _nameValidate,
                       ),
                     ),
                     Padding(
@@ -101,14 +159,17 @@ class _NewResourceState extends State<NewResource> {
                           left: 10.0, right: 10.0, top: 5.0, bottom: 5.0),
                       child: TextFormField(
                         decoration: InputDecoration(
-                          labelText: "Description",
-                        ),
+                            labelText: "Description",
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15.0))),
                         style: TextStyle(color: Colors.grey),
                         keyboardType: TextInputType.multiline,
                         focusNode: _descriptionFocusNode,
                         onFieldSubmitted: (val) {
                           FocusScope.of(context).requestFocus(_priceFocusNode);
                         },
+                        controller: _descriptionResourceController,
+                        validator: _descriptionValidate,
                       ),
                     ),
                     _priceWidget(),
@@ -118,7 +179,9 @@ class _NewResourceState extends State<NewResource> {
                       minWidth: MediaQuery.of(context).size.width,
                       elevation: 0.7,
                       textColor: Colors.white,
-                      onPressed: () {},
+                      onPressed: () {
+                        validateData();
+                      },
                       color: Colors.redAccent,
                       child: Text("Add Resource",
                           style: TextStyle(fontSize: 16.0)),
@@ -133,6 +196,72 @@ class _NewResourceState extends State<NewResource> {
     );
   }
 
+  String _nameValidate(String val) {
+    if (val.length < 3) {
+      return "Name Must be 3 Char long";
+    }
+    return null;
+  }
+
+  String _descriptionValidate(String val) {
+    if (val.length < 5) {
+      return "Please Type Some Description";
+    }
+    return null;
+  }
+
+  String _priceValidate(String val) {
+    if (val.length <= 0) {
+      return "Please Provide Price";
+    }
+    if (int.parse(val) <= 0) {
+      return "Price to low";
+    }
+    return null;
+  }
+
+  validateData() {
+    if (_formNewResourceKey.currentState.validate()) {
+//    If all data are correct then save data to out variables
+
+      if (!_tcs && !_cargo && !_none) {
+        setState(() {
+          _deliveryValidate = false;
+          return;
+        });
+      }else{
+        setState(() {
+          _deliveryValidate = true;
+          return;
+        });
+      }
+      if (_selectedSaleType != "Donate") {
+        if (!_banktransfer && !_easypaisa && !_cod) {
+          setState(() {
+            _paymentValidate = false;
+            return;
+          });
+        }else{
+          setState(() {
+            _paymentValidate = true;
+            return;
+          });
+        }
+      }
+
+      _uploadDatatoServer();
+    } else {
+//    If all data are not valid then start auto validation.
+      setState(() {
+        _autoNewResourceValidate = true;
+      });
+    }
+  }
+
+  _uploadDatatoServer() async {
+    
+  }
+
   _priceWidget() {
     if (_selectedSaleType != "Donate") {
       return Padding(
@@ -140,12 +269,15 @@ class _NewResourceState extends State<NewResource> {
             left: 10.0, right: 10.0, top: 5.0, bottom: 5.0),
         child: TextFormField(
           decoration: InputDecoration(
-            labelText: "Price",
-          ),
+              labelText: "Price",
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15.0))),
           style: TextStyle(color: Colors.grey),
-          keyboardType: TextInputType.numberWithOptions(signed: true),
+          keyboardType: TextInputType.number,
           focusNode: _priceFocusNode,
           onFieldSubmitted: (val) {},
+          controller: _priceResourceController,
+          validator: _priceValidate,
         ),
       );
     }
@@ -169,6 +301,7 @@ class _NewResourceState extends State<NewResource> {
                 fontWeight: FontWeight.bold,
                 color: Colors.grey),
           ),
+          _showDeliveryError(),
           CheckboxListTile(
             title: Text(
               "Cargo",
@@ -201,6 +334,20 @@ class _NewResourceState extends State<NewResource> {
     );
   }
 
+  _showDeliveryError() {
+    if (!_deliveryValidate) {
+      return Text(
+        "Please Select Atleast One Method",
+        style: TextStyle(fontSize: 14.0, color: Colors.red),
+      );
+    } else {
+      return SizedBox(
+        width: 0.0,
+        height: 0.0,
+      );
+    }
+  }
+
   _styleCheckbox() {
     return TextStyle(
       fontSize: 16.0,
@@ -209,18 +356,32 @@ class _NewResourceState extends State<NewResource> {
 
   _cargoOnChange(value) {
     setState(() {
+      if (value) {
+        _none = false;
+        _deliveryValidate = true;
+                
+      }
       _cargo = value;
     });
   }
 
   _tcsOnChange(value) {
     setState(() {
+      if (value) {
+        _none = false;
+        _deliveryValidate = true;
+      }
       _tcs = value;
     });
   }
 
   _noneOnChange(value) {
     setState(() {
+      if (value) {
+        _tcs = false;
+        _cargo = false;
+        _deliveryValidate = true;
+      }
       _none = value;
     });
   }
@@ -238,6 +399,7 @@ class _NewResourceState extends State<NewResource> {
           style: TextStyle(
               fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.grey),
         ),
+        _showPaymentError(),
         CheckboxListTile(
           title: Text(
             "Cash on Delivery",
@@ -266,20 +428,43 @@ class _NewResourceState extends State<NewResource> {
     );
   }
 
+  _showPaymentError() {
+    if (!_paymentValidate) {
+      return Text(
+        "Please Select Atleast One Method",
+        style: TextStyle(fontSize: 14.0, color: Colors.red),
+      );
+    } else {
+      return SizedBox(
+        width: 0.0,
+        height: 0.0,
+      );
+    }
+  }
+
   _codOnChange(value) {
     setState(() {
+      if(value){
+        _paymentValidate = true;
+      }
       _cod = value;
     });
   }
 
   _easypaisaOnChange(value) {
     setState(() {
+      if(value){
+        _paymentValidate = true;
+      }
       _easypaisa = value;
     });
   }
 
   _banktransferOnChange(value) {
     setState(() {
+      if(value){
+        _paymentValidate = true;
+      }
       _banktransfer = value;
     });
   }

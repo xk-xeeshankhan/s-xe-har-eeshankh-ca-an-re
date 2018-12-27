@@ -75,7 +75,7 @@ class _AccountState extends State<Account> {
 
   _home() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getString("email") != null) {
+    if (prefs.getString("userId") != null) {
       Navigator.of(context).pushReplacementNamed('/home');
     } else {
       print("Main: SharedPreferences Else ");
@@ -185,8 +185,9 @@ class _AccountState extends State<Account> {
       "password": _passwordLoginController.text
     });
     print(response.body);
-    if (response.body.toLowerCase().compareTo("success") == 0) {
-      _sharepref();
+    if (int.parse(response.body.toLowerCase()) > 0) {
+      
+      _sharepref(response.body);
       Navigator.of(context).pushReplacementNamed('/home');
     } else if (response.body.toLowerCase().compareTo("notverified") == 0) {
       _snackbar(
@@ -201,9 +202,9 @@ class _AccountState extends State<Account> {
     }
   }
 
-  _sharepref() async {
+  _sharepref(String userId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("email", _emailLoginController.text);
+    prefs.setString("userId", userId);
   }
 
   _loginFunction() {

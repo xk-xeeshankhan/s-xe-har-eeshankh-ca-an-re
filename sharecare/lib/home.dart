@@ -7,7 +7,6 @@ import 'package:sharecare/order.dart';
 import 'package:sharecare/resource.dart';
 import 'package:sharecare/setting.dart';
 import 'homeLayout/screen.dart';
-import 'package:sharecare/Model/resource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,39 +25,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     _tabController = new TabController(vsync: this, initialIndex: 0, length: 4);
     _serverData();
   }
-
+  
   _serverData() async {
-    var response = await http.post(Uri.encodeFull(serverURL), headers: {
-      "Accept": "application/json"
-    }, body: {
-      "worktodone": "Resources",
+    setState(() {
+      ServerLoadResources();
     });
-    if (response.body.toLowerCase().compareTo("nodata") == 0) {
-    } else {
-      setState(() {
-        List data = json.decode(response.body);
-        data.forEach((res) => resourceListAll.add(new ResourceModel(
-            int.parse(res["id"]),
-            res["name"],
-            res["description"],
-            res["status"],
-            res["saleType"],
-            res["imageUrl"],
-            res["addedDate"],
-            int.parse(res["price"]),
-            res["cashOnDelivery"]=="0",
-            res["facebook"]=="0",
-            res["none"]=="0",
-            res["easypaisa"]=="0",
-            res["tcs"]=="0",
-            res["cargo"]=="0",
-            res["banktransfer"]=="0",
-            int.parse(res["feedLike"]),
-            int.parse(res["feedDislike"]),
-            int.parse(res["userId"]),
-            int.parse(res["requestUserId"]))));
-      });
-    }
   }
 
   @override

@@ -1,14 +1,21 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as basePathFile;
 import 'package:sharecare/constant.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NewResource extends StatefulWidget {
   _NewResourceState createState() => _NewResourceState();
 }
 
 class _NewResourceState extends State<NewResource> {
+  final GlobalKey<ScaffoldState> _newResouceScaffold =
+      new GlobalKey<ScaffoldState>();
+
   TextEditingController _nameResourceController;
   TextEditingController _descriptionResourceController;
   TextEditingController _priceResourceController;
@@ -19,6 +26,8 @@ class _NewResourceState extends State<NewResource> {
 
   List<String> _saleType = ["Sell", "Bid", "Rent", "Donate"];
   String _selectedSaleType = "Sell";
+  String _imageUrlServer;
+  File _image;
 
   final GlobalKey<FormState> _formNewResourceKey = GlobalKey<FormState>();
   bool _autoNewResourceValidate = false;
@@ -54,12 +63,12 @@ class _NewResourceState extends State<NewResource> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _newResouceScaffold,
       appBar: constantAppBar("New Resource"),
       body: _body(),
     );
   }
 
-  File _image;
   _pickImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -224,27 +233,35 @@ class _NewResourceState extends State<NewResource> {
     if (_formNewResourceKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
 
+      if (_image == null) {
+        _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+          duration: Duration(seconds: 3),
+          content: new Text(
+            "Please Select Image",
+            style: TextStyle(color: Colors.white),
+          ),
+        ));
+        return;
+      }
       if (!_tcs && !_cargo && !_none) {
         setState(() {
           _deliveryValidate = false;
-          return;
         });
-      }else{
+        return;
+      } else {
         setState(() {
           _deliveryValidate = true;
-          return;
         });
       }
       if (_selectedSaleType != "Donate") {
         if (!_banktransfer && !_easypaisa && !_cod) {
           setState(() {
             _paymentValidate = false;
-            return;
           });
-        }else{
+          return;
+        } else {
           setState(() {
             _paymentValidate = true;
-            return;
           });
         }
       }
@@ -259,7 +276,110 @@ class _NewResourceState extends State<NewResource> {
   }
 
   _uploadDatatoServer() async {
-    
+    //current date
+    DateTime date = DateTime.now();
+    //convet image to String
+    List<int> imageBytes = _image.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
+    print("Image base64" + base64Image);
+
+    //get image name and extension and modify for unique
+    String fileName = basePathFile.basenameWithoutExtension(_image.path) +
+        date.microsecond.toString();
+    String fileExtension = basePathFile.extension(_image.path);
+    String fullFileName = fileName + fileExtension;
+    print("Filename " + fullFileName);
+
+    _imageUrlServer = "http://localhost/shareandcare/images/" + fullFileName;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userId = prefs.getString("userId");
+
+    String formattedDate = date.year.toString() +
+        "-" +
+        date.month.toString() +
+        "-" +
+        date.day.toString();
+
+    String query = "Insert INTO resource Values ( null,'" +
+        _nameResourceController.text +
+        "' , '" +
+        _descriptionResourceController.text +
+        "'," +
+        " " +
+        (_selectedSaleType == 'Donate' ? '0' : _priceResourceController.text) +
+        ", '" +
+        formattedDate +
+        "', '" +
+        _selectedSaleType +
+        "', '" +
+        _imageUrlServer +
+        "', 'Avaliable'," +
+        " " +
+        _cod.toString() +
+        " ,'0', '" +
+        userId +
+        "' , 0, " +
+        _none.toString() +
+        " , " +
+        _easypaisa.toString() +
+        ", " +
+        _banktransfer.toString() +
+        ", '0', '0' , " +
+        _cargo.toString() +
+        " , " +
+        _tcs.toString() +
+        " ) ";
+
+    var response =
+        await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
+      "worktodone": "AddNewResource",
+      "imageFile": base64Image,
+      "imageFileName": fullFileName,
+      "query": query
+    });
+    print("Response New Resource" + response.body);
+    if (response.body.toLowerCase().compareTo("success") == 0) {
+      setState(() {
+        _nameResourceController.text="";
+        _descriptionResourceController.text = "";
+        _priceResourceController.text="";
+        _cod = false;
+        _banktransfer = false;
+        _easypaisa = false;
+        _cargo = false;
+        _tcs = false;
+        _none = false;
+        _image = null;
+        ServerLoadResources();
+        _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+          duration: Duration(seconds: 3),
+          content: new Text(
+            "New Resource Added Successfully",
+            style: TextStyle(color: Colors.white),
+          ),
+        ));
+      });
+    } else if (response.body.compareTo("errorimage") == 0) {
+      _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+          duration: Duration(seconds: 3000),
+          action: SnackBarAction(label: "Try Again",onPressed: (){
+            _uploadDatatoServer();
+          },),
+          content: new Text(
+            "Error Uploading Image",
+            style: TextStyle(color: Colors.white),
+          ),
+        ));
+    } else {
+       _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+          duration: Duration(seconds: 3),
+          content: new Text(
+            "Error Try Again later",
+            style: TextStyle(color: Colors.white),
+          ),
+        ));
+    }
   }
 
   _priceWidget() {
@@ -359,7 +479,6 @@ class _NewResourceState extends State<NewResource> {
       if (value) {
         _none = false;
         _deliveryValidate = true;
-                
       }
       _cargo = value;
     });
@@ -444,7 +563,7 @@ class _NewResourceState extends State<NewResource> {
 
   _codOnChange(value) {
     setState(() {
-      if(value){
+      if (value) {
         _paymentValidate = true;
       }
       _cod = value;
@@ -453,7 +572,7 @@ class _NewResourceState extends State<NewResource> {
 
   _easypaisaOnChange(value) {
     setState(() {
-      if(value){
+      if (value) {
         _paymentValidate = true;
       }
       _easypaisa = value;
@@ -462,7 +581,7 @@ class _NewResourceState extends State<NewResource> {
 
   _banktransferOnChange(value) {
     setState(() {
-      if(value){
+      if (value) {
         _paymentValidate = true;
       }
       _banktransfer = value;

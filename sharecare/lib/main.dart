@@ -33,7 +33,6 @@ class MyApp extends StatelessWidget {
   _myRoutes() {
     return <String, WidgetBuilder>{
       '/home': (_) => new Home(),
-      '/newresource': (_) => new NewResource(),
       '/account': (_) => new Account(),
       // '/setting': (_) => new Setting(),
     };

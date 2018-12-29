@@ -16,11 +16,15 @@ class ResourceDetail extends StatefulWidget {
 class _ResourceDetailState extends State<ResourceDetail> {
   String _calledBy;
   String _id;
+
+  final GlobalKey<ScaffoldState> _deatilScaffold =
+      new GlobalKey<ScaffoldState>();
   /*Biding  */
   int _bidSliderValue;
   double _bidMinValue;
   double _bidMaxValue;
   String _bidText;
+  bool _beFirst;
   /*--Biding  */
 
   ResourceModel resourceDetail;
@@ -64,24 +68,51 @@ class _ResourceDetailState extends State<ResourceDetail> {
               int.parse(res["requestUserId"]));
         });
         /*Bid */
-        if(resourceDetail.saleType.toLowerCase().compareTo("bid")==0){
-         
-          _bidSliderValue = int.parse(resourceDetail.price.toString()); 
-          _bidMinValue = double.parse((resourceDetail.price/2).toString()); 
-          _bidMaxValue = double.parse((resourceDetail.price*2).toString()); 
-           _bidText = "Price: "+_bidSliderValue.toString();
+        if (resourceDetail.saleType.toLowerCase().compareTo("bid") == 0) {
+          _bidSliderValue = int.parse(resourceDetail.price.toString());
+          _bidMinValue = double.parse((resourceDetail.price / 2).toString());
+          _bidMaxValue = double.parse((resourceDetail.price * 2).toString());
+          _bidText = "Price: " + _bidSliderValue.toString();
+          _getBidingDetail();
         }
-        if (_calledBy == "resource") {
-        } else {}
+
+        if (_calledBy == "myresource" && resourceDetail.saleType == "Rent") {
+          _getRentDetail();
+        }
       });
     } else {
       //no data from server
     }
   }
 
+  _getBidingDetail() async {
+    var response = await http.post(Uri.encodeFull(serverURL),
+        headers: {"Accept": "application/json"},
+        body: {"worktodone": "BidingDetail", "id": _id});
+    if (response.body != "nodata") {
+      List data = json.decode(response.body);
+      resourceDetail.bidingDetailList = new List();
+      data.forEach((biding) {});
+    } else {
+      _beFirst = true;
+    }
+  }
+
+  _getRentDetail() async {
+    var response = await http.post(Uri.encodeFull(serverURL),
+        headers: {"Accept": "application/json"},
+        body: {"worktodone": "RentDetail", "id": _id});
+    if (response.body != "nodata") {
+      List data = json.decode(response.body);
+    } else {
+      _beFirst = true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _deatilScaffold,
       appBar: constantAppBar("Resource Detail"),
       body: SingleChildScrollView(
         child: Padding(
@@ -195,6 +226,8 @@ class _ResourceDetailState extends State<ResourceDetail> {
           ),
           _paymentMethod(),
           _deliveryMethod(),
+          _userInfo(),
+          _requestedUserInfo(),
           _bidPriceBar(),
           _detailActionButton(),
           _bidDetail(),
@@ -202,6 +235,85 @@ class _ResourceDetailState extends State<ResourceDetail> {
         ],
       );
     }
+  }
+
+  _userInfo() {
+    return Column(
+      children: <Widget>[
+        Divider(
+          height: 2.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(3.0),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Icon(
+                  Icons.person,
+                  color: Colors.red,
+                ),
+                flex: 1,
+              ),
+              Expanded(
+                child: Text(
+                  "User name",
+                ),
+                flex: 6,
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(3.0),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Icon(
+                  Icons.email,
+                  color: Colors.red,
+                ),
+                flex: 1,
+              ),
+              Expanded(
+                child: Text(
+                  "Email Address",
+                ),
+                flex: 6,
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(3.0),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Icon(
+                  Icons.phone,
+                  color: Colors.red,
+                ),
+                flex: 1,
+              ),
+              Expanded(
+                child: Text(
+                  "+923340592919",
+                ),
+                flex: 6,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  _requestedUserInfo() {
+    if (resourceDetail.requestUserId != null) {
+      return SizedBox(
+        width: 0.0,
+        height: 0.0,
+      );
+    } else {}
   }
 
   /*
@@ -216,14 +328,16 @@ class _ResourceDetailState extends State<ResourceDetail> {
         resourceDetail.saleType.toLowerCase().compareTo("bid") == 0) {
       return Column(
         children: <Widget>[
-          Text(_bidText,style: TextStyle(fontSize: 14.0),),
+          Text(
+            _bidText,
+            style: TextStyle(fontSize: 14.0),
+          ),
           Slider(
             onChanged: (val) {
               setState(() {
                 _bidSliderValue = val.round();
-                _bidText = "Price: "+_bidSliderValue.toString();
+                _bidText = "Price: " + _bidSliderValue.toString();
               });
-              
             },
             value: double.parse(_bidSliderValue.toString()),
             min: _bidMinValue,
@@ -475,7 +589,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
               ),
             ],
           ),
-          _bidContent(),
+          _bidList(),
         ],
       );
     } else {
@@ -486,7 +600,27 @@ class _ResourceDetailState extends State<ResourceDetail> {
     }
   }
 
-  _bidContent() {
+  _bidList() {
+    if (_beFirst) {
+      return Text(
+        "Be First To Bid",
+        style: TextStyle(fontSize: 16.0, color: Colors.green),
+      );
+    } else {
+      return ListView.separated(
+        itemCount: resourceDetail.bidingDetailList.length,
+        itemBuilder: (BuildContext context, int index) {
+          _bidContent(index);
+        },
+        separatorBuilder: (BuildContext context, int index) => Divider(
+              height: 1.0,
+              color: Colors.grey,
+            ),
+      );
+    }
+  }
+
+  _bidContent(int index) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -494,7 +628,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
           Padding(
             padding: const EdgeInsets.only(top: 2.0, bottom: 3.0, left: 5.0),
             child: Text(
-              "Xeeshan Khan",
+              resourceDetail.bidingDetailList[index].userInfo.name,
               style: TextStyle(fontSize: 16.0),
             ),
           ),
@@ -502,7 +636,8 @@ class _ResourceDetailState extends State<ResourceDetail> {
             padding: const EdgeInsets.only(
                 top: 2.0, bottom: 3.0, left: 5.0, right: 5.0),
             child: Text(
-              "PKR 200000",
+              "PKR " +
+                  resourceDetail.bidingDetailList[index].bidPrice.toString(),
               style: TextStyle(fontSize: 16.0),
             ),
           ),
@@ -510,17 +645,17 @@ class _ResourceDetailState extends State<ResourceDetail> {
             padding: const EdgeInsets.only(
                 top: 2.0, bottom: 3.0, left: 5.0, right: 5.0),
             child: Text(
-              "+92334059921",
+              resourceDetail.bidingDetailList[index].userInfo.phonenumber,
               style: TextStyle(fontSize: 16.0),
             ),
           ),
-          _bidApproveButton(),
+          _bidApproveButton(index),
         ],
       ),
     );
   }
 
-  _bidApproveButton() {
+  _bidApproveButton(int index) {
     if (_calledBy.toLowerCase().compareTo("myresource") == 0) {
       return Padding(
         padding:
@@ -566,7 +701,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
               ),
             ],
           ),
-          _rentContent(),
+          _rentList(),
         ],
       );
     } else {
@@ -577,7 +712,20 @@ class _ResourceDetailState extends State<ResourceDetail> {
     }
   }
 
-  _rentContent() {
+  _rentList() {
+    return ListView.separated(
+      itemCount: resourceDetail.rentDetailList.length,
+      itemBuilder: (BuildContext context, int index) {
+        _rentContent(index);
+      },
+      separatorBuilder: (BuildContext context, int index) => Divider(
+            height: 1.0,
+            color: Colors.grey,
+          ),
+    );
+  }
+
+  _rentContent(int index) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -586,7 +734,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
             padding: const EdgeInsets.only(
                 top: 5.0, bottom: 5.0, left: 5.0, right: 5.0),
             child: Text(
-              "Xeeshan Khan",
+              resourceDetail.rentDetailList[index].userInfo.name,
               style: TextStyle(fontSize: 16.0),
             ),
           ),
@@ -594,7 +742,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
             padding: const EdgeInsets.only(
                 top: 5.0, bottom: 5.0, left: 5.0, right: 5.0),
             child: Text(
-              "Rented Date",
+              resourceDetail.rentDetailList[index].rentedDate,
               style: TextStyle(fontSize: 16.0),
             ),
           ),
@@ -602,7 +750,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
             padding: const EdgeInsets.only(
                 top: 5.0, bottom: 5.0, left: 5.0, right: 5.0),
             child: Text(
-              "Return Date",
+              resourceDetail.rentDetailList[index].returnDate,
               style: TextStyle(fontSize: 16.0),
             ),
           ),
@@ -610,7 +758,8 @@ class _ResourceDetailState extends State<ResourceDetail> {
             padding: const EdgeInsets.only(
                 top: 5.0, bottom: 5.0, left: 5.0, right: 5.0),
             child: Text(
-              "PKR 200000",
+              "PKR " +
+                  resourceDetail.rentDetailList[index].rentPrice.toString(),
               style: TextStyle(fontSize: 16.0),
             ),
           ),
@@ -618,7 +767,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
             padding: const EdgeInsets.only(
                 top: 5.0, bottom: 5.0, left: 5.0, right: 5.0),
             child: Text(
-              "+92334059921",
+              resourceDetail.rentDetailList[index].userInfo.phonenumber,
               style: TextStyle(fontSize: 16.0),
             ),
           ),

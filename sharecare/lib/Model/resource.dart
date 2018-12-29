@@ -58,3 +58,4 @@ class ResourceModel {
 }
 
 List<ResourceModel> resourceListAll= List();
+List<ResourceModel> myResourceList = List();

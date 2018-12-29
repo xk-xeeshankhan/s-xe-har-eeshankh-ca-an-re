@@ -3,16 +3,23 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as basePathFile;
+import 'package:sharecare/Model/resource.dart';
 import 'package:sharecare/constant.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewResource extends StatefulWidget {
+  final String calledBy;
+  final String resourceId;
+  NewResource(this.calledBy, this.resourceId);
   _NewResourceState createState() => _NewResourceState();
 }
 
 class _NewResourceState extends State<NewResource> {
+  String _calledBy, _resourceId;
+  ResourceModel resourceModel;
+
   final GlobalKey<ScaffoldState> _newResouceScaffold =
       new GlobalKey<ScaffoldState>();
 
@@ -51,13 +58,64 @@ class _NewResourceState extends State<NewResource> {
 
   @override
   void initState() {
+    _calledBy = widget.calledBy;
+    _resourceId = widget.resourceId;
+
     /*Controllers */
     _nameResourceController = TextEditingController();
     _descriptionResourceController = TextEditingController();
     _priceResourceController = TextEditingController();
     /*--Controllers */
-
+    if (_calledBy.toLowerCase() == "myresource") {
+      _getDataFromServer();
+    }
     super.initState();
+  }
+
+  _getDataFromServer() async {
+    print("NewResource GetDataFormServer");
+    var response = await http.post(Uri.encodeFull(serverURL),
+        headers: {"Accept": "application/json"},
+        body: {"worktodone": "ResourcesDetail", "id": _resourceId});
+    if (response.body.toLowerCase().compareTo("nodata") == 0) {
+      print("Server LoadResource NoData");
+    } else {
+      print("ServerLoadResource Data Found " + response.body.toString());
+      setState(() {
+        List data = json.decode(response.body);
+        data.forEach((res) => resourceModel = new ResourceModel(
+            int.parse(res["id"]),
+            res["name"],
+            res["description"],
+            res["status"],
+            res["saleType"],
+            res["imageUrl"],
+            res["addedDate"],
+            int.parse(res["price"]),
+            res["cashOnDelivery"] == "0",
+            res["facebook"] == "0",
+            res["none"] == "0",
+            res["easypaisa"] == "0",
+            res["tcs"] == "0",
+            res["cargo"] == "0",
+            res["banktransfer"] == "0",
+            int.parse(res["feedLike"]),
+            int.parse(res["feedDislike"]),
+            int.parse(res["userId"]),
+            int.parse(res["requestUserId"])));
+
+        _nameResourceController.text = resourceModel.name;
+        _descriptionResourceController.text = resourceModel.description;
+        _priceResourceController.text = resourceModel.price.toString();
+        _selectedSaleType = resourceModel.saleType;
+        _tcs = resourceModel.tcs;
+        _cargo = resourceModel.cargo;
+        _none = resourceModel.none;
+        _easypaisa = resourceModel.easypasa;
+        _banktransfer = resourceModel.banktransfer;
+        _cod = resourceModel.cashOnDelivery;
+      });
+    }
   }
 
   @override
@@ -77,6 +135,15 @@ class _NewResourceState extends State<NewResource> {
   }
 
   _imageLayout() {
+    if (_calledBy == "myresource" && _image == null && resourceModel != null) {
+      return Image(
+        image: NetworkImage(
+            resourceModel.imageUrl.replaceFirst("localhost", ipv4)),
+        width: MediaQuery.of(context).size.width,
+        height: 200.0,
+        fit: BoxFit.cover,
+      );
+    }
     if (_image == null) {
       return Image(
         image: AssetImage("assets/images/bg.jpg"),
@@ -192,7 +259,10 @@ class _NewResourceState extends State<NewResource> {
                         validateData();
                       },
                       color: Colors.redAccent,
-                      child: Text("Add Resource",
+                      child: Text(
+                          _calledBy == "home"
+                              ? "New Resource"
+                              : "Update Resource",
                           style: TextStyle(fontSize: 16.0)),
                     ),
                   ],
@@ -233,7 +303,7 @@ class _NewResourceState extends State<NewResource> {
     if (_formNewResourceKey.currentState.validate()) {
 //    If all data are correct then save data to out variables
 
-      if (_image == null) {
+      if (_image == null && _calledBy == "home") {
         _newResouceScaffold.currentState.showSnackBar(new SnackBar(
           duration: Duration(seconds: 3),
           content: new Text(
@@ -275,8 +345,7 @@ class _NewResourceState extends State<NewResource> {
     }
   }
 
-  _uploadDatatoServer() async {
-    //current date
+  _newResourceToServer() async {
     DateTime date = DateTime.now();
     //convet image to String
     List<int> imageBytes = _image.readAsBytesSync();
@@ -341,9 +410,9 @@ class _NewResourceState extends State<NewResource> {
     print("Response New Resource" + response.body);
     if (response.body.toLowerCase().compareTo("success") == 0) {
       setState(() {
-        _nameResourceController.text="";
+        _nameResourceController.text = "";
         _descriptionResourceController.text = "";
-        _priceResourceController.text="";
+        _priceResourceController.text = "";
         _cod = false;
         _banktransfer = false;
         _easypaisa = false;
@@ -362,23 +431,123 @@ class _NewResourceState extends State<NewResource> {
       });
     } else if (response.body.compareTo("errorimage") == 0) {
       _newResouceScaffold.currentState.showSnackBar(new SnackBar(
-          duration: Duration(seconds: 3000),
-          action: SnackBarAction(label: "Try Again",onPressed: (){
+        duration: Duration(seconds: 3000),
+        action: SnackBarAction(
+          label: "Try Again",
+          onPressed: () {
             _uploadDatatoServer();
-          },),
-          content: new Text(
-            "Error Uploading Image",
-            style: TextStyle(color: Colors.white),
-          ),
-        ));
+          },
+        ),
+        content: new Text(
+          "Error Uploading Image",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
     } else {
-       _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+      _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 3),
+        content: new Text(
+          "Error Try Again later",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+    }
+  }
+
+  _updateResourceToServer() async {
+    String query = "Update resource set name = '" +
+        _nameResourceController.text +
+        "' , description = '" +
+        _descriptionResourceController.text +
+        "' , price = " +
+        (_selectedSaleType == "Donate" ? '0' : _priceResourceController.text) +
+        ", saleType = '" +
+        _selectedSaleType +
+        "', cashOnDelivery = " +
+        _cod.toString() +
+        " , none = " +
+        _none.toString() +
+        " , easypaisa = " +
+        _easypaisa.toString() +
+        ", banktransfer = " +
+        _banktransfer.toString() +
+        ", tcs= " +
+        _tcs.toString() +
+        ", cargo= " +
+        _cargo.toString() +
+        " ";
+
+    String base64Image;
+    String filename;
+    if (_image != null) {
+      //get old image name
+      int Lastindex = resourceModel.imageUrl.lastIndexOf('/');
+      filename = resourceModel.imageUrl.substring((Lastindex + 1));
+      print("filename" + filename);
+      //decode
+      List<int> imageBytes = _image.readAsBytesSync();
+      base64Image = base64Encode(imageBytes);
+      String imageUrl = resourceModel.imageUrl.substring(0,Lastindex);
+      imageUrl = imageUrl + "/update_" + filename;
+      query = query + ", imageUrl = '"+imageUrl+"' ";
+    }
+
+    query = query + " WHERE id = " +
+        _resourceId +
+        " ";
+
+    var response =
+        await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
+      "worktodone": "UpdateResource",
+      "imageFile": base64Image == null ? "Null" : base64Image,
+      "filename": filename==null?"Null":filename,
+      "query": query
+    });
+    
+    print("Response Update Resource" + response.body);
+    if (response.body.toLowerCase().compareTo("success") == 0) {
+      setState(() {
+        ServerLoadMyResource();
+        _newResouceScaffold.currentState.showSnackBar(new SnackBar(
           duration: Duration(seconds: 3),
           content: new Text(
-            "Error Try Again later",
+            "Updated Resource Successfully",
             style: TextStyle(color: Colors.white),
           ),
         ));
+      });
+    } else if (response.body.compareTo("errorimage") == 0) {
+      _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 3000),
+        action: SnackBarAction(
+          label: "Try Again",
+          onPressed: () {
+            _uploadDatatoServer();
+          },
+        ),
+        content: new Text(
+          "Error Uploading Image",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+    } else {
+      _newResouceScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 3),
+        content: new Text(
+          "Error Try Again later",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+    }
+  }
+
+  _uploadDatatoServer() {
+    //current date
+    if (_calledBy == "home") {
+      _newResourceToServer();
+    } else if (_calledBy == "myresource") {
+      print("MyResource Update Resource Server");
+      _updateResourceToServer();
     }
   }
 

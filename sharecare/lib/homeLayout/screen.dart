@@ -19,6 +19,8 @@ class _ScreenState extends State<Screen> {
     super.initState();
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     return _checkScreen();
@@ -55,6 +57,7 @@ class _ScreenState extends State<Screen> {
       return _displayRow();
     }
   }
+
 
   _displayRow() {
     return ListView.separated(

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:sharecare/Model/resource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-String ipv4 = "192.168.1.8";
+String ipv4 = "192.168.1.11";
 String serverURL = "http://" + ipv4 + "/shareandcare/android/";
 
 final GlobalKey<ScaffoldState> homeScaffold = new GlobalKey<ScaffoldState>();

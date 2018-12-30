@@ -1,9 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:sharecare/Model/bidingdetail.dart';
+import 'package:sharecare/Model/rentdetail.dart';
 import 'package:sharecare/Model/resource.dart';
 import 'package:http/http.dart' as http;
+import 'package:sharecare/Model/user.dart';
 import 'package:sharecare/constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ResourceDetail extends StatefulWidget {
   //calledby => resource or myresource
@@ -24,13 +28,12 @@ class _ResourceDetailState extends State<ResourceDetail> {
   double _bidMinValue;
   double _bidMaxValue;
   String _bidText;
-  bool _beFirst;
+  bool _beFirst = true;
   /*--Biding  */
 
   ResourceModel resourceDetail;
   @override
   void initState() {
-    // TODO: implement initState
     _calledBy = widget.calledBy;
     _id = widget.id;
     _getResourceData();
@@ -47,7 +50,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
       setState(() {
         data.forEach((res) {
           resourceDetail = ResourceModel(
-              int.parse(res["id"]),
+              int.parse(res["0"]),
               res["name"],
               res["description"],
               res["status"],
@@ -66,6 +69,14 @@ class _ResourceDetailState extends State<ResourceDetail> {
               int.parse(res["feedDislike"]),
               int.parse(res["userId"]),
               int.parse(res["requestUserId"]));
+
+          if (_calledBy == "resource") {
+            resourceDetail.user = User(int.parse(res["userId"]), res["name"],
+                res["email"], res["phonenumber"]);
+          } else if (_calledBy == "myresource" &&
+              resourceDetail.requestUserId != 0) {
+            _getRequestedUserData();
+          }
         });
         /*Bid */
         if (resourceDetail.saleType.toLowerCase().compareTo("bid") == 0) {
@@ -85,28 +96,80 @@ class _ResourceDetailState extends State<ResourceDetail> {
     }
   }
 
-  _getBidingDetail() async {
+  _getRequestedUserData() async {
+    print("_getRequestedUserData Id"+resourceDetail.requestUserId.toString());
+    var response = await http.post(Uri.encodeFull(serverURL), headers: {
+      "Accept": "application/json"
+    }, body: {
+      "worktodone": "userData",
+      "id": resourceDetail.requestUserId.toString()
+    });
+    print("_getRequestedUserData Response "+ response.body);
+    setState(() {   
+      if (response.body == "nodata") {
+      } else {
+        List data = json.decode(response.body);
+        data.forEach((item) {
+          resourceDetail.user = new User(resourceDetail.requestUserId, item["name"],
+              item["email"], item["phonenumber"]);
+        });
+      }
+      
+    });
+  }
+
+  Future _getBidingDetail() async {
+    print("GetBidingDetail");
     var response = await http.post(Uri.encodeFull(serverURL),
         headers: {"Accept": "application/json"},
         body: {"worktodone": "BidingDetail", "id": _id});
-    if (response.body != "nodata") {
-      List data = json.decode(response.body);
-      resourceDetail.bidingDetailList = new List();
-      data.forEach((biding) {});
-    } else {
-      _beFirst = true;
-    }
+    print("GetBidingDetail Response: " + response.body);
+    setState(() {
+      if (response.body != "nodata") {
+        _beFirst = false;
+        List data = json.decode(response.body);
+        resourceDetail.bidingDetailList = List();
+        data.forEach((biding) {
+          resourceDetail.bidingDetailList.add(BidingDetail(
+              int.parse(biding["id"]),
+              int.parse(biding["resourceId"]),
+              int.parse(biding["bidPrice"]),
+              new User(int.parse(biding["userId"]), biding["name"],
+                  biding["email"], biding["phonenumber"])));
+        });
+      } else {
+        _beFirst = true;
+      }
+    });
   }
 
-  _getRentDetail() async {
+  Future _getRentDetail() async {
+    print("GetRentDetail");
     var response = await http.post(Uri.encodeFull(serverURL),
         headers: {"Accept": "application/json"},
         body: {"worktodone": "RentDetail", "id": _id});
-    if (response.body != "nodata") {
-      List data = json.decode(response.body);
-    } else {
-      _beFirst = true;
-    }
+    print("GetRentDetail Response " + response.body);
+    setState(() {
+      if (response.body != "nodata") {
+        _beFirst = false;
+        print("GetRentDetail Data Found ");
+        List data = json.decode(response.body);
+        resourceDetail.rentDetailList = new List();
+        data.forEach((rent) {
+          resourceDetail.rentDetailList.add(new RentDetail(
+              int.parse(rent["id"]),
+              int.parse(rent["resourceId"]),
+              int.parse(rent["rentPrice"]),
+              rent["rentedDate"],
+              rent["returnDate"],
+              new User(int.parse(rent["userId"]), rent["name"], rent["email"],
+                  rent["phonenumber"])));
+        });
+      } else {
+        print("GetRentDetail No Data Found ");
+        _beFirst = true;
+      }
+    });
   }
 
   @override
@@ -238,82 +301,189 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _userInfo() {
-    return Column(
-      children: <Widget>[
-        Divider(
-          height: 2.0,
-        ),
-        Padding(
-          padding: const EdgeInsets.all(3.0),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Icon(
-                  Icons.person,
-                  color: Colors.red,
-                ),
-                flex: 1,
-              ),
-              Expanded(
-                child: Text(
-                  "User name",
-                ),
-                flex: 6,
-              ),
-            ],
+    if (_calledBy == "resource") {
+      return Column(
+        children: <Widget>[
+          Divider(
+            height: 2.0,
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(3.0),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Icon(
-                  Icons.email,
-                  color: Colors.red,
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  "User Info".toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                flex: 1,
-              ),
-              Expanded(
-                child: Text(
-                  "Email Address",
-                ),
-                flex: 6,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(3.0),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Icon(
-                  Icons.phone,
-                  color: Colors.red,
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.red,
+                  ),
+                  flex: 1,
                 ),
-                flex: 1,
-              ),
-              Expanded(
-                child: Text(
-                  "+923340592919",
+                Expanded(
+                  child: Text(
+                    resourceDetail.user.name,
+                  ),
+                  flex: 6,
                 ),
-                flex: 6,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    );
-  }
-
-  _requestedUserInfo() {
-    if (resourceDetail.requestUserId != null) {
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Icon(
+                    Icons.email,
+                    color: Colors.red,
+                  ),
+                  flex: 1,
+                ),
+                Expanded(
+                  child: Text(
+                    resourceDetail.user.emailaddress,
+                  ),
+                  flex: 6,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Icon(
+                    Icons.phone,
+                    color: Colors.red,
+                  ),
+                  flex: 1,
+                ),
+                Expanded(
+                  child: Text(
+                    resourceDetail.user.phonenumber,
+                  ),
+                  flex: 6,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
       return SizedBox(
         width: 0.0,
         height: 0.0,
       );
-    } else {}
+    }
+  }
+
+  _requestedUserInfo() {
+    if (resourceDetail.requestUserId != 0 && _calledBy == "myresource" && resourceDetail.user != null) {
+      return Column(
+        children: <Widget>[
+          Divider(
+            height: 2.0,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  "Buyer Info".toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.red,
+                  ),
+                  flex: 1,
+                ),
+                Expanded(
+                  child: Text(
+                    resourceDetail.user.name,
+                  ),
+                  flex: 6,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Icon(
+                    Icons.email,
+                    color: Colors.red,
+                  ),
+                  flex: 1,
+                ),
+                Expanded(
+                  child: Text(
+                    resourceDetail.user.emailaddress,
+                  ),
+                  flex: 6,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(3.0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Icon(
+                    Icons.phone,
+                    color: Colors.red,
+                  ),
+                  flex: 1,
+                ),
+                Expanded(
+                  child: Text(
+                    resourceDetail.user.phonenumber,
+                  ),
+                  flex: 6,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return SizedBox(
+        width: 0.0,
+        height: 0.0,
+      );
+    }
   }
 
   /*
@@ -357,18 +527,181 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _detailActionButton() {
-    return MaterialButton(
-      minWidth: MediaQuery.of(context).size.width,
-      elevation: 0.7,
-      textColor: Colors.white,
-      onPressed: () {},
-      color: Colors.redAccent,
-      child: Text("Check In".toUpperCase(),
-          style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+    if (resourceDetail.status.toLowerCase() != "avaliable") {
+      return Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: Text(
+          resourceDetail.status.toLowerCase() == "rented"
+              ? "This Item is Rented"
+              : "This Item is Sold",
+          style: TextStyle(fontSize: 18.0, color: Colors.red),
+        ),
+      );
+    } else if (_calledBy == "myresource" &&
+        (resourceDetail.status.toLowerCase() == "rented" ||
+            resourceDetail.status.toLowerCase() == "sold")) {
+      return MaterialButton(
+        minWidth: MediaQuery.of(context).size.width,
+        elevation: 0.7,
+        textColor: Colors.white,
+        onPressed: _buttomSubmitted,
+        color: Colors.redAccent,
+        child: Text("Check In",
+            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+      );
+    } else if (_calledBy == "resource" &&
+        resourceDetail.status.toLowerCase() == "avaliable") {
+      return MaterialButton(
+        minWidth: MediaQuery.of(context).size.width,
+        elevation: 0.7,
+        textColor: Colors.white,
+        onPressed: _buttomSubmitted,
+        color: Colors.redAccent,
+        child: Text(
+            resourceDetail.saleType == "Bid"
+                ? "Place Bid"
+                : resourceDetail.saleType == "Rent"
+                    ? "Rent Resource"
+                    : "Checkout",
+            style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+      );
+    } else {
+      return SizedBox(
+        height: 0.0,
+        width: 0.0,
+      );
+    }
+  }
+
+  _buttomSubmitted() {
+    AlertDialog dialog = new AlertDialog(
+      contentPadding: EdgeInsets.all(0.0),
+      title: Title(
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Icon(Icons.warning),
+              flex: 1,
+            ),
+            Expanded(
+              child: Text(
+                "Are You Sure?",
+                style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+              ),
+              flex: 4,
+            )
+          ],
+        ),
+        color: Colors.grey,
+      ),
+      actions: <Widget>[
+        FlatButton(
+          onPressed: () {
+            _dialogResult("Cancel");
+          },
+          child: Text("Cancel", style: TextStyle(color: Colors.red)),
+        ),
+        FlatButton(
+          onPressed: () {
+            _dialogResult("Sure");
+          },
+          child: Text("Sure", style: TextStyle(color: Colors.red)),
+        ),
+      ],
     );
+
+    showDialog(context: context, builder: (_) => dialog);
+  }
+
+  _dialogResult(String action) {
+    if (action == "Cancel") {
+      Navigator.pop(context);
+    } else {
+      Navigator.pop(context);
+      if (_calledBy == "myresource") {
+        _myResourceSubmit();
+      } else {
+        _homeResourceSubmit();
+      }
+    }
+  }
+
+  _myResourceSubmit() async {
+    print("_myResourceSubmit ResourceId: "+resourceDetail.id.toString()+", SaleType: "+resourceDetail.saleType
+    +" , requestedUserId:"+resourceDetail.requestUserId.toString()+" ");
+    var response =
+        await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
+      "worktodone": "OwnerSubmitResourceDetail",
+      "id": resourceDetail.id.toString(),
+      "saleType": resourceDetail.saleType,
+      "requesteduserId": resourceDetail.requestUserId.toString()
+    });
+    print("_myResourceSubmit Response" + response.body);
+    if (response.body == "success") {
+      _getResourceData();
+      _deatilScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 2),
+        content: new Text(
+          "Update Successfully",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+    } else {}
+  }
+
+  _homeResourceSubmit() async {
+    
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userId = prefs.getString("userId");
+
+    print("_myResourceSubmit ResourceId: "+resourceDetail.id.toString()+", SaleType: "+resourceDetail.saleType
+    +" , current userId:"+userId+" owner user id "+resourceDetail.userId.toString());
+
+    if(resourceDetail.userId.toString()==userId){
+      _deatilScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 2),
+        content: new Text(
+          "Resource Belog to You",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+      return;
+    }
+    var response =
+        await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
+      "worktodone": "UserSubmitResourceDetail",
+      "resourceId": resourceDetail.id.toString(),
+      "saleType": resourceDetail.saleType,
+      "resourcePrice": resourceDetail.price.toString(),
+      "bidprice":resourceDetail.saleType=="Bid"?_bidSliderValue.toString():"nill",
+      "userId": userId
+    });
+    print("_homeResourceSubmit Response" + response.body);
+    if (response.body == "success") {
+      _getResourceData();
+      _deatilScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 2),
+        content: new Text(
+          "Request Submitted",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+    } else {
+      _deatilScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 2),
+        content: new Text(
+          "Try Again Later",
+          style: TextStyle(color: Colors.red),
+        ),
+      ));
+    }
   }
 
   _paymentMethod() {
+    if(resourceDetail.saleType=="Donate"){
+      return SizedBox(width: 0.0,height: 0.0,);
+    }else{
     return Padding(
       padding: const EdgeInsets.only(top: 10.0, bottom: 5.0),
       child: Column(
@@ -396,6 +729,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
         ],
       ),
     );
+    }
   }
 
   _easypaisa() {
@@ -607,15 +941,17 @@ class _ResourceDetailState extends State<ResourceDetail> {
         style: TextStyle(fontSize: 16.0, color: Colors.green),
       );
     } else {
-      return ListView.separated(
+      return ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
         itemCount: resourceDetail.bidingDetailList.length,
         itemBuilder: (BuildContext context, int index) {
-          _bidContent(index);
+          return Column(
+            children: <Widget>[
+              _bidContent(index),
+            ],
+          );
         },
-        separatorBuilder: (BuildContext context, int index) => Divider(
-              height: 1.0,
-              color: Colors.grey,
-            ),
       );
     }
   }
@@ -713,16 +1049,25 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _rentList() {
-    return ListView.separated(
-      itemCount: resourceDetail.rentDetailList.length,
-      itemBuilder: (BuildContext context, int index) {
-        _rentContent(index);
-      },
-      separatorBuilder: (BuildContext context, int index) => Divider(
-            height: 1.0,
-            color: Colors.grey,
-          ),
-    );
+    if (!_beFirst) {
+      return ListView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: resourceDetail.rentDetailList.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Column(
+            children: <Widget>[
+              _rentContent(index),
+            ],
+          );
+        },
+      );
+    } else {
+      return Text(
+        "No Data Yet",
+        style: TextStyle(fontSize: 16.0, color: Colors.green),
+      );
+    }
   }
 
   _rentContent(int index) {

@@ -8,7 +8,7 @@ class ResourceModel {
   int price;
   bool cashOnDelivery, facebook, none, easypasa, tcs, cargo, banktransfer;
 
-  User _requestedUser;
+  User _user;
   List<RentDetail> _rentDetailList;
   List<BidingDetail> _bidingDetailList;
 
@@ -33,10 +33,10 @@ class ResourceModel {
       this.userId,
       this.requestUserId);
 /*User */
-  User get requestedUser => _requestedUser;
+  User get user => _user;
 
-  set requestedUser(User requestedUser) {
-    _requestedUser = requestedUser;
+  set user(User user) {
+    _user = user;
   }
 /*--User */
 

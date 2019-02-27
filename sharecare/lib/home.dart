@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:sharecare/Model/resource.dart';
-import 'package:sharecare/constant.dart';
+import 'constant.dart';
 import 'package:sharecare/newresource.dart';
 import 'package:sharecare/order.dart';
 import 'package:sharecare/resource.dart';
@@ -20,8 +20,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   TabController _tabController;
   int _bottomCurrentIndex = 0;
 
+  List<ResourceModel> searchDuplicate;
+
+  final GlobalKey<ScaffoldState> homeScaffold = new GlobalKey<ScaffoldState>();
+
+  bool _appBarSearch = false;
+  TextEditingController _searchController;
+
   @override
   void initState() {
+    _searchController = TextEditingController();
     _tabController = new TabController(vsync: this, initialIndex: 0, length: 4);
     _serverData();
     super.initState();
@@ -103,7 +111,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     } else if (_bottomCurrentIndex == 2) {
       return Order();
     } else if (_bottomCurrentIndex == 3) {
-      return Setting();
+      return Setting(homeScaffold);
     }
   }
 
@@ -172,14 +180,64 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
+  _searchData(val) {
+    print("_searchData " + val.toString());
+    if (val.toString().length == 0) {
+      setState(() {
+        if (searchDuplicate != null) {
+          print("_searchData searchDuplicate");
+          resourceListAll.clear();
+          resourceListAll = searchDuplicate;
+          searchDuplicate = null;
+        }
+        _appBarSearch = false;
+      });
+    } else {
+      setState(() {
+        if (searchDuplicate == null) {
+          print("_searchData searchDuplicate==null");
+          searchDuplicate = resourceListAll;
+        }
+        resourceListAll = List();
+        searchDuplicate.forEach((item) {
+          if (item.name.toLowerCase().contains(val.toString().toLowerCase())) {
+            resourceListAll.add(item);
+          }
+        });
+      });
+    }
+  }
+
   _appBarActions() {
     if (_bottomCurrentIndex == 0) {
-      return <Widget>[
-        IconButton(
-          icon: Icon(Icons.search),
-          onPressed: () {},
-        ),
-      ];
+      if (_appBarSearch) {
+        return <Widget>[
+          Container(
+            width: MediaQuery.of(context).size.width,
+            child: TextFormField(
+              decoration: InputDecoration(
+                icon: Icon(Icons.search),
+                hintText: "Search Here...",
+              ),
+              style: TextStyle(color: Colors.white),
+              keyboardType: TextInputType.text,
+              controller: _searchController,
+              onFieldSubmitted: _searchData,
+            ),
+          ),
+        ];
+      } else {
+        return <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              setState(() {
+                _appBarSearch = true;
+              });
+            },
+          ),
+        ];
+      }
     }
     return null;
   }

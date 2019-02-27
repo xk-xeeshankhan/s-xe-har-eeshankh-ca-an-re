@@ -296,7 +296,7 @@ class _AccountState extends State<Account> {
                               FocusScope.of(_signupScaffold.currentContext)
                                   .requestFocus(_phoneRegisterFocusNode);
                             },
-                            focusNode: _nameRegisterFocusNode,
+                            
                             autofocus: true,
                             controller: _nameSignUpController,
                             validator: validateName,

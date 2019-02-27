@@ -6,7 +6,7 @@ import 'package:sharecare/Model/rentdetail.dart';
 import 'package:sharecare/Model/resource.dart';
 import 'package:http/http.dart' as http;
 import 'package:sharecare/Model/user.dart';
-import 'package:sharecare/constant.dart';
+import 'constant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ResourceDetail extends StatefulWidget {
@@ -49,9 +49,10 @@ class _ResourceDetailState extends State<ResourceDetail> {
       List data = json.decode(response.body);
       setState(() {
         data.forEach((res) {
+          print(res);
           resourceDetail = ResourceModel(
               int.parse(res["0"]),
-              res["name"],
+              res["1"],
               res["description"],
               res["status"],
               res["saleType"],
@@ -97,24 +98,23 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _getRequestedUserData() async {
-    print("_getRequestedUserData Id"+resourceDetail.requestUserId.toString());
+    print("_getRequestedUserData Id" + resourceDetail.requestUserId.toString());
     var response = await http.post(Uri.encodeFull(serverURL), headers: {
       "Accept": "application/json"
     }, body: {
       "worktodone": "userData",
       "id": resourceDetail.requestUserId.toString()
     });
-    print("_getRequestedUserData Response "+ response.body);
-    setState(() {   
+    print("_getRequestedUserData Response " + response.body);
+    setState(() {
       if (response.body == "nodata") {
       } else {
         List data = json.decode(response.body);
         data.forEach((item) {
-          resourceDetail.user = new User(resourceDetail.requestUserId, item["name"],
-              item["email"], item["phonenumber"]);
+          resourceDetail.user = new User(resourceDetail.requestUserId,
+              item["name"], item["email"], item["phonenumber"]);
         });
       }
-      
     });
   }
 
@@ -394,7 +394,9 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _requestedUserInfo() {
-    if (resourceDetail.requestUserId != 0 && _calledBy == "myresource" && resourceDetail.user != null) {
+    if (resourceDetail.requestUserId != 0 &&
+        _calledBy == "myresource" &&
+        resourceDetail.user != null) {
       return Column(
         children: <Widget>[
           Divider(
@@ -527,17 +529,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _detailActionButton() {
-    if (resourceDetail.status.toLowerCase() != "avaliable") {
-      return Padding(
-        padding: const EdgeInsets.all(3.0),
-        child: Text(
-          resourceDetail.status.toLowerCase() == "rented"
-              ? "This Item is Rented"
-              : "This Item is Sold",
-          style: TextStyle(fontSize: 18.0, color: Colors.red),
-        ),
-      );
-    } else if (_calledBy == "myresource" &&
+    if (_calledBy == "myresource" &&
         (resourceDetail.status.toLowerCase() == "rented" ||
             resourceDetail.status.toLowerCase() == "sold")) {
       return MaterialButton(
@@ -564,6 +556,16 @@ class _ResourceDetailState extends State<ResourceDetail> {
                     ? "Rent Resource"
                     : "Checkout",
             style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+      );
+    } else if (resourceDetail.status.toLowerCase() != "avaliable") {
+      return Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: Text(
+          resourceDetail.status.toLowerCase() == "rented"
+              ? "This Item is Rented"
+              : "This Item is Sold",
+          style: TextStyle(fontSize: 18.0, color: Colors.red),
+        ),
       );
     } else {
       return SizedBox(
@@ -627,8 +629,13 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _myResourceSubmit() async {
-    print("_myResourceSubmit ResourceId: "+resourceDetail.id.toString()+", SaleType: "+resourceDetail.saleType
-    +" , requestedUserId:"+resourceDetail.requestUserId.toString()+" ");
+    print("_myResourceSubmit ResourceId: " +
+        resourceDetail.id.toString() +
+        ", SaleType: " +
+        resourceDetail.saleType +
+        " , requestedUserId:" +
+        resourceDetail.requestUserId.toString() +
+        " ");
     var response =
         await http.post(Uri.encodeFull(serverURL), headers: {}, body: {
       "worktodone": "OwnerSubmitResourceDetail",
@@ -650,15 +657,19 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _homeResourceSubmit() async {
-    
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String userId = prefs.getString("userId");
 
-    print("_myResourceSubmit ResourceId: "+resourceDetail.id.toString()+", SaleType: "+resourceDetail.saleType
-    +" , current userId:"+userId+" owner user id "+resourceDetail.userId.toString());
+    print("_myResourceSubmit ResourceId: " +
+        resourceDetail.id.toString() +
+        ", SaleType: " +
+        resourceDetail.saleType +
+        " , current userId:" +
+        userId +
+        " owner user id " +
+        resourceDetail.userId.toString());
 
-    if(resourceDetail.userId.toString()==userId){
+    if (resourceDetail.userId.toString() == userId) {
       _deatilScaffold.currentState.showSnackBar(new SnackBar(
         duration: Duration(seconds: 2),
         content: new Text(
@@ -674,7 +685,9 @@ class _ResourceDetailState extends State<ResourceDetail> {
       "resourceId": resourceDetail.id.toString(),
       "saleType": resourceDetail.saleType,
       "resourcePrice": resourceDetail.price.toString(),
-      "bidprice":resourceDetail.saleType=="Bid"?_bidSliderValue.toString():"nill",
+      "bidprice": resourceDetail.saleType == "Bid"
+          ? _bidSliderValue.toString()
+          : "nill",
       "userId": userId
     });
     print("_homeResourceSubmit Response" + response.body);
@@ -699,36 +712,39 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _paymentMethod() {
-    if(resourceDetail.saleType=="Donate"){
-      return SizedBox(width: 0.0,height: 0.0,);
-    }else{
-    return Padding(
-      padding: const EdgeInsets.only(top: 10.0, bottom: 5.0),
-      child: Column(
-        children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                "Payment Methods".toUpperCase(),
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
+    if (resourceDetail.saleType == "Donate") {
+      return SizedBox(
+        width: 0.0,
+        height: 0.0,
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.only(top: 10.0, bottom: 5.0),
+        child: Column(
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  "Payment Methods".toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Row(
-            children: <Widget>[
-              _bankTransfer(),
-              _cashOnDelivery(),
-              _easypaisa(),
-            ],
-          ),
-        ],
-      ),
-    );
+              ],
+            ),
+            Row(
+              children: <Widget>[
+                _bankTransfer(),
+                _cashOnDelivery(),
+                _easypaisa(),
+              ],
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -940,7 +956,7 @@ class _ResourceDetailState extends State<ResourceDetail> {
         "Be First To Bid",
         style: TextStyle(fontSize: 16.0, color: Colors.green),
       );
-    } else {
+    } else if(resourceDetail.bidingDetailList !=null) {
       return ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
@@ -953,6 +969,8 @@ class _ResourceDetailState extends State<ResourceDetail> {
           );
         },
       );
+    }else{
+      return SizedBox(width: 0.0,height: 0.0,);
     }
   }
 
@@ -992,12 +1010,14 @@ class _ResourceDetailState extends State<ResourceDetail> {
   }
 
   _bidApproveButton(int index) {
-    if (_calledBy.toLowerCase().compareTo("myresource") == 0) {
+    if (_calledBy.toLowerCase().compareTo("myresource") == 0 && resourceDetail.status!="Allocated") {
       return Padding(
         padding:
             const EdgeInsets.only(top: 1.0, bottom: 1.0, left: 5.0, right: 5.0),
         child: FlatButton(
-          onPressed: () {},
+          onPressed: () {
+            _alertDialogBid(index);
+          },
           color: Colors.grey[200],
           child: Text(
             "Approve",
@@ -1011,6 +1031,78 @@ class _ResourceDetailState extends State<ResourceDetail> {
         height: 0.0,
       );
     }
+  }
+
+  _alertDialogBid(index){
+    AlertDialog dialog = new AlertDialog(
+      contentPadding: EdgeInsets.all(0.0),
+      title: Title(
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Icon(Icons.warning),
+              flex: 1,
+            ),
+            Expanded(
+              child: Text(
+                "Are You Sure?",
+                style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+              ),
+              flex: 4,
+            )
+          ],
+        ),
+        color: Colors.grey,
+      ),
+      content: 
+        Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Text("Allocate Bid to \""+resourceDetail.bidingDetailList[index].userInfo.name.toUpperCase()+"\" ",style: TextStyle(fontSize: 18.0),),
+        ),
+      
+      actions: <Widget>[
+        FlatButton(
+          onPressed: () {
+             Navigator.pop(context);
+          },
+          child: Text("No", style: TextStyle(color: Colors.red)),
+        ),
+        FlatButton(
+          onPressed: () {
+             Navigator.pop(context);
+            _serverBidApprove(index);
+          },
+          child: Text("Yes", style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    );
+
+    showDialog(context: context, builder: (_) => dialog);
+  }
+
+  _serverBidApprove(int index) async{
+    print("_serverBidApprove");
+    var response = await http.post(Uri.encodeFull(serverURL),
+        body: {
+          "worktodone": "BidApprove", 
+          "userId": resourceDetail.bidingDetailList[index].userInfo.id.toString(),
+          "resourceId":_id},
+        );
+    print("GetRentDetail Response " + response.body);
+    setState(() {
+      if (response.body == "success") {
+        _getResourceData();
+        _deatilScaffold.currentState.showSnackBar(new SnackBar(
+        duration: Duration(seconds: 2),
+        content: new Text(
+          "Recource Allocated",
+          style: TextStyle(color: Colors.white),
+        ),
+      ));
+      } else {
+        print("GetRentDetail No Data Found ");
+      }
+    });
   }
 
   _rentDetail() {

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as basePathFile;
 import 'package:sharecare/Model/resource.dart';
-import 'package:sharecare/constant.dart';
+import 'constant.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -85,7 +85,7 @@ class _NewResourceState extends State<NewResource> {
         List data = json.decode(response.body);
         data.forEach((res) => resourceModel = new ResourceModel(
             int.parse(res["id"]),
-            res["name"],
+            res["1"],
             res["description"],
             res["status"],
             res["saleType"],
